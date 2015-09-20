@@ -1,0 +1,109 @@
+precision highp float;
+
+const int NB_CASCADE_SPLIT = 4;
+
+struct cascadeParams {
+    mat4 mvMatrix;
+    mat4 pMatrix;
+    float nearPlane;
+    float farPlane;
+};
+
+/*
+	Attributes
+*/
+attribute vec3 aVertexPosition;
+attribute vec3 aVertexNormal;
+attribute vec3 aVertexTangent;
+attribute vec2 aTexturePosition;
+
+/*
+	Camera Matrix
+*/
+uniform mat4 uMVMatrix;
+uniform mat4 uPMatrix;
+uniform mat4 uModelMatrix;
+uniform mat4 uViewMatrix;
+//uniform mat4 projNMatrix;
+uniform mat3 uNormalMatrix;
+
+uniform sampler2D uHeightMap;
+uniform sampler2D uTerrainNormals;
+
+/*
+	Light Matrix
+*/
+uniform mat4 uLightMVMatrix;
+uniform mat4 uLightPMatrix;
+
+uniform cascadeParams cParams[NB_CASCADE_SPLIT];
+
+/*
+	Uniforms
+*/
+uniform bool uUseLighting;
+uniform vec3 uLightingDirection;
+uniform float uMode;
+
+uniform float uHeightScale;
+uniform float uMapSize;
+
+/*
+	Varyings
+*/
+
+varying vec4 vVertexPosition;
+varying vec3 vVertexNormal;
+varying vec2 vTextureCoord;
+
+varying vec3 vLightDir;
+varying vec3 vEyeDirection;
+varying vec3 worldPosition;
+
+varying vec4 vPositionLights[NB_CASCADE_SPLIT];
+
+const mat4 ScaleMatrix = mat4(0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.5, 0.5, 0.5, 1.0);
+
+void main(void) {
+
+	/*
+		Camera POV
+	*/
+    
+	vVertexPosition = uMVMatrix * vec4(aVertexPosition, 1.0);
+	gl_Position = uPMatrix * vVertexPosition;
+	
+	/*
+	  Light POV
+	*/
+	
+	vPositionLights[0] = ScaleMatrix * (cParams[0].pMatrix) * (cParams[0].mvMatrix) * vec4(aVertexPosition, 1.0);
+	vPositionLights[1] = ScaleMatrix * (cParams[1].pMatrix) * (cParams[1].mvMatrix) * vec4(aVertexPosition, 1.0);
+	vPositionLights[2] = ScaleMatrix * (cParams[2].pMatrix) * (cParams[2].mvMatrix) * vec4(aVertexPosition, 1.0);
+	vPositionLights[3] = ScaleMatrix * (cParams[3].pMatrix) * (cParams[3].mvMatrix) * vec4(aVertexPosition, 1.0);
+	
+
+	/* 
+	   Textures UV
+	*/
+	vTextureCoord = aTexturePosition;
+
+    // Unpack normal
+    
+    vVertexNormal = aVertexNormal;
+    		
+	vec3 n = aVertexNormal;
+	vec3 t = aVertexTangent.xyz;
+	vec3 b = cross(n, t);
+		
+	vLightDir.x = dot(uLightingDirection, t);
+	vLightDir.z = -dot(uLightingDirection, b);
+	vLightDir.y = dot(uLightingDirection, n);
+	
+	vLightDir = normalize (vLightDir);
+	
+	vEyeDirection = uNormalMatrix * normalize(-vVertexPosition.xyz);	
+	vEyeDirection = vec3(dot(vEyeDirection, t), dot(vEyeDirection, b) , dot(vEyeDirection, n));
+	
+
+}

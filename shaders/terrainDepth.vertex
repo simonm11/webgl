@@ -1,0 +1,37 @@
+precision highp float;
+
+attribute vec3 aVertexPosition;
+attribute vec3 aVertexNormal;
+attribute vec2 aTextureCoord;
+
+uniform mat4 uMVMatrix;
+uniform mat4 uPMatrix;
+uniform mat3 uNMatrix;
+uniform mat4 projNMatrix;
+uniform mat4 uModelMatrix;
+uniform mat4 uViewMatrix;
+uniform vec3 uTranslation;
+uniform float unitMode;
+	
+uniform bool uUseLighting;
+
+varying vec2 vTextureCoord;
+varying vec4 vVertexPosition;
+varying vec3 vVertexNormal;
+varying vec3 vTransformedNormal;
+varying vec4 vWorldVertex;
+varying vec3 pos;
+
+void main(void) {
+	pos = aVertexPosition;
+	
+	vWorldVertex = uModelMatrix * vec4(aVertexPosition + uTranslation, 1.0);
+	vVertexPosition = uViewMatrix * vWorldVertex;
+	
+	gl_Position = uPMatrix * vVertexPosition;
+
+	
+	vTextureCoord = aTextureCoord;
+	vTransformedNormal = uNMatrix * aVertexNormal;
+	vVertexNormal = aVertexNormal;
+}

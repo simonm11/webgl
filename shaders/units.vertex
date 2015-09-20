@@ -1,0 +1,29 @@
+precision highp float;
+
+attribute vec3 aVertexPosition;
+
+uniform mat4 uMVMatrix;
+uniform mat4 uPMatrix;
+uniform vec3 uTranslation;
+uniform vec3 uScale;
+uniform vec3 uDirection;
+
+varying vec4 vWorldPosition;
+
+void main() {
+       
+
+    // create rotation matrix for the orientation of the unit
+	mat4 rotationMatrix;
+	rotationMatrix[0] = vec4(uDirection.x, 0.0, -uDirection.z, 0.0);
+	rotationMatrix[1] = vec4(0.0, 1.0, 0.0, 0.0);
+	rotationMatrix[2] = vec4(uDirection.z, 0.0, uDirection.x, 0.0);
+	rotationMatrix[3] = vec4(0.0, 0.0, 0.0, 1.0);
+	
+    // Apply Rotation, Scaling and Translation
+	//pos = ( ( ( vec4(aVertexPosition, 1.0) * rotationMatrix).xyz * uScale) + uTranslation).xyz;
+	
+    // 
+	vWorldPosition = uMVMatrix * vec4( ( ( vec4(aVertexPosition, 1.0) * rotationMatrix).xyz * uScale) + uTranslation, 1.0);
+	gl_Position = uPMatrix * vWorldPosition;
+}

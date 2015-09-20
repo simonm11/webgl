@@ -1,0 +1,21 @@
+precision highp float;
+
+attribute vec3 aVertexPosition;
+
+uniform sampler2D uHeightMap;
+uniform float uMapSize;
+uniform float uHeightScale;
+uniform float uWaterLevel;
+
+uniform mat4 uMVMatrix;
+uniform mat4 uPMatrix;
+uniform vec3 uTranslation;
+
+void main(void) {
+
+  vec3 vWorldPosition = aVertexPosition + uTranslation;
+
+  vWorldPosition.y = texture2D(uHeightMap, vWorldPosition.xz / uMapSize).x * uHeightScale - (uWaterLevel * uHeightScale);
+    
+  gl_Position = uPMatrix * uMVMatrix * vec4(vWorldPosition, 1.0);
+}

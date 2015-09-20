@@ -1,0 +1,43 @@
+.UTtable {
+    border-collapse: collapse;
+    width: 80%;
+    margin: auto;
+    margin-top: 50px;
+    margin-bottom: 50px;
+    
+    font-size: 12px;
+    font-family: consolas;
+}
+
+.UTtableHead {
+    background: #eeeeee;
+    font-weight: bold;
+}
+
+.UTtableHead  td{
+    border-right: 1px solid #cecece;
+}
+
+.UTtable tr {
+    border-top: 1px solid #cecece;
+    border-left: 1px solid #cecece;
+    border-right: 1px solid #cecece;
+    height: 30px;
+}
+
+
+.UTtable td {
+    text-align: center;
+}
+
+.UTrowError {
+    background: #ffdaa0;
+}
+
+.UTrowError2 {
+    background: #ff9196;
+}
+
+.UTrowSuccess {
+    background: #48b55a;
+}

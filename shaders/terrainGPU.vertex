@@ -1,0 +1,104 @@
+precision highp float;
+
+attribute vec3 aVertexPosition;
+
+const int NB_CASCADE_SPLIT = 4;
+
+struct cascadeParams {
+    mat4 mvMatrix;
+    mat4 pMatrix;
+    float nearPlane;
+    float farPlane;
+};
+
+uniform cascadeParams cParams[NB_CASCADE_SPLIT];
+
+uniform mat4 uMVMatrix;
+uniform mat4 uPMatrix;
+uniform vec3 uTranslation;
+
+// Map constants
+
+uniform sampler2D uHeightMap;
+uniform float uMapSize;
+uniform float uHeightScale;
+uniform float uMode;
+uniform float uWaterLevel;
+
+// Light Uniforms
+
+uniform vec3 uLightingDirection;
+
+// Varyings
+
+varying vec4 vVertexPosition;
+varying vec3 vWorldPosition;
+varying vec3 vVertexNormal;
+varying vec3 vEyeDirection;
+varying vec3 vLightDir;
+
+varying vec4 vPositionLights[NB_CASCADE_SPLIT];
+
+const mat4 ScaleMatrix = mat4(0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.5, 0.5, 0.5, 1.0);
+
+void main(){
+
+    // Position
+
+    vWorldPosition = aVertexPosition + uTranslation;
+    
+    vWorldPosition.y = texture2D(uHeightMap, vWorldPosition.xz / uMapSize).x * uHeightScale - (uWaterLevel * uHeightScale);
+
+    vVertexPosition = uMVMatrix * vec4(vWorldPosition, 1.0);
+    
+    gl_Position = uPMatrix * vVertexPosition;
+    
+    vPositionLights[0] = ScaleMatrix * (cParams[0].pMatrix) * (cParams[0].mvMatrix) * vec4(vWorldPosition,1.0);
+    vPositionLights[1] = ScaleMatrix * (cParams[1].pMatrix) * (cParams[1].mvMatrix) * vec4(vWorldPosition,1.0);
+    vPositionLights[2] = ScaleMatrix * (cParams[2].pMatrix) * (cParams[2].mvMatrix) * vec4(vWorldPosition,1.0);
+    vPositionLights[3] = ScaleMatrix * (cParams[3].pMatrix) * (cParams[3].mvMatrix) * vec4(vWorldPosition,1.0);
+    
+    // Unpack normal
+    float packedNormal = texture2D(uHeightMap, vWorldPosition.xz / uMapSize).y;
+    
+    vec3 normal;
+    
+    normal.x = floor((packedNormal / (256.0 * 256.0)) - 1.0/255.0);
+    normal.y = floor((packedNormal - (normal.x * 256.0 * 256.0)) / 256.0);
+    normal.z = (packedNormal - (normal.x * 256.0 * 256.0) - (normal.y * 256.0));
+    
+    normal /= 256.0;
+    normal = (normal * 2.0) - 1.0;
+
+    vVertexNormal = normal;
+    
+    // Unpack tangent
+    
+    float packedTangent = texture2D(uHeightMap, vWorldPosition.xz / uMapSize).z;
+    
+    vec3 tangent;
+    
+    tangent.x = floor((packedTangent / (256.0 * 256.0)) - 1.0/255.0);
+    tangent.y = floor((packedTangent - (tangent.x * 256.0 * 256.0)) / 256.0);
+    tangent.z = (packedTangent - (tangent.x * 256.0 * 256.0) - (tangent.y * 256.0));
+    
+    tangent /= 256.0;
+    tangent = (tangent * 2.0) - 1.0;
+    
+    // Create tangent space Light Direction and Eye direction
+    vec3 n = normal;
+    vec3 t = tangent;//aVertexTangent.xyz;
+    vec3 b = cross(n, t);
+
+    vec3 h = uLightingDirection * vec3(1.0, 1.0, 1.0);
+		
+    vLightDir.x = dot(h, t);
+    vLightDir.z = -dot(h, b);
+    vLightDir.y = dot(h, n);
+	
+    vLightDir = normalize(vLightDir);
+    
+    //vEyeDirection = uNormalMatrix * normalize(-vVertexPosition.xyz);	
+    //vEyeDirection = vec3(dot(vEyeDirection, t), dot(vEyeDirection, b) , dot(vEyeDirection, n));
+
+}

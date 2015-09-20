@@ -1,0 +1,87 @@
+<html>
+
+<head>
+<title>test</title>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+<script type="text/javascript" src="libs/glMatrix-0.9.5.min.js"></script>
+<script type="text/javascript" src="libs/jquery-1.11.1.min.js"></script>
+
+<link rel="stylesheet" href="jquery-ui.css"/>
+<script type="text/javascript" src="jquery-ui.js"></script>
+
+<script type="text/javascript" src="libs/stats.min.js"></script>
+<script type="text/javascript" src="libs/webgl-utils.js"></script>
+<script type="text/javascript" src="libs/dds.js"></script>
+
+<script type="text/javascript" src="libs/three/three.js"></script>
+
+<script type="text/javascript" src="libs/webgl-debug.js"></script>
+
+<link rel="stylesheet" href="tools/unit-test/unit-test.css"/>
+<script type="text/javascript" src="tools/unit-test/unit-test.js"></script>
+
+<script type="text/javascript" src="src/Grid.js"></script>
+<script type="text/javascript" src="src/engine.js"></script>
+<script type="text/javascript" src="src/gui.js"></script>
+<script type="text/javascript" src="src/shaders.js"></script>
+<script type="text/javascript" src="src/map.js"></script>
+<script type="text/javascript" src="src/simpleModel.js"></script>
+<script type="text/javascript" src="src/events.js"></script>
+<script type="text/javascript" src="src/main.js"></script>
+
+<script type="text/javascript">
+
+    function webGLStart() {
+        /*
+        // Init canvas
+        try {
+            var canvas = $('#webgl-canvas')[0];
+            var gl = canvas.getContext("experimental-webgl", { antialias:false });
+            
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+
+            gl.viewportWidth = canvas.width;
+            gl.viewportHeight = canvas.height;
+        } catch (e) {
+            console.log(e);
+        }       
+        
+        if (!gl) {
+            alert("Erreur init webgl");
+        }
+*/
+        // Start Testing
+        var testGrid = new GridTest();
+        var res = testGrid.get();
+        
+        UTRun(res, 'testGrid');
+        
+        //UTdisplay(res, 'testGrid');
+        //UTdisplay(res, 'testGrid2');
+        
+        /*
+        for ( var i = 0; i < res.length; i++ ) {
+            if ( res[i].error !== 0 ) {
+                console.log(res[i].error + ' ' + res[i].string);
+            }
+        }
+        */
+        //console.log(res);
+        
+
+        
+    }
+
+</script>
+
+
+</head>
+
+
+<body onload="webGLStart();" style="margin: 0;">
+
+
+</body>
+
+</html>

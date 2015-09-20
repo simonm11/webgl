@@ -1,0 +1,31 @@
+precision highp float;
+
+const int NB_CASCADE_SPLIT = 4;
+
+struct cascadeParams {
+    mat4 mvMatrix;
+    mat4 pMatrix;
+    float nearPlane;
+    float farPlane;
+};
+
+attribute vec3 aVertexPosition;
+
+uniform cascadeParams cParams[NB_CASCADE_SPLIT];
+uniform vec2 uDepthMapSize;
+
+uniform mat4 uMVMatrix;
+uniform mat4 uPMatrix;
+
+varying vec4 vVertexPosition;
+varying vec4 vPosition[NB_CASCADE_SPLIT];
+
+void main(void) {
+  /*
+  for(int i = 0; i < NB_CASCADE_SPLIT; ++i) {
+    vPosition[i] = (cParams[i].pMatrix) * (cParams[i].mvMatrix) * vec4(aVertexPosition, 1.0);
+  }
+  */
+
+  gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+}

@@ -1,4 +1,3 @@
-
 /**
 *   Grid.js
 *   Create a 2D mesh of a square grid with the appropriate webgl buffers.
@@ -26,8 +25,8 @@ var Grid = function() {
 *   @param {number} number of blocks height
 *   @param {number} size of a block (width)
 *   @param {number} size of a block (height)
-*   @param {number} ??
-*   @param {number} ??
+*   @param {number}
+*   @param {number}
 */
 Grid.prototype.initMesh = function(width, height, blockSizeW, blockSizeH, ratio, direction) {
     //this.resolution = width;

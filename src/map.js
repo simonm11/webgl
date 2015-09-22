@@ -62,125 +62,17 @@ var Map = function(_engine) {
     this.normalBuffer = undefined;
     this.uvBuffer = undefined;
     this.tangentBuffer = undefined;
-     
+    
     // webgl buffers
     this.buffers = [];
 
-
-    this.tilePositionBuffer = undefined;
-    this.tileIndexesBuffer = undefined;
     
-};
-
-/**
-*   @param {float} size in units of the tile
-*   @param {float} resolution*resolution*2 = number of triangles inside the tile
-*/
-Map.prototype.createTile = function(size, resolution) {
-
-    var indexPosition = 0;
-    var indexTexture = 0;
-
-    var tmpBuffer = new Float32Array(resolution * resolution * 3);
-    //this.uvBuffer = new Float32Array(height*width*2);
-
-    
-
-    //this.model['position'] = [];
-    //this.model['uv'] = [];
-    var maxX = 0;
-    var maxZ = 0;
-    // Generate vertex positions and UV positions
-    for(var j = 0; j < resolution; ++j) {
-        for(var i = 0; i < resolution; ++i) {
-            
-            // Texture UV coordinates
-            var U = (i / (resolution - 1));
-            var V = (j / (resolution - 1));
-            
-            // Vertex position
-            var X = (U * size);
-            var Z = (V * size);
-            
-            // Put this into the buffers
-            tmpBuffer[indexPosition++] = X;
-            tmpBuffer[indexPosition++] = 0.0;
-            tmpBuffer[indexPosition++] = Z;
-            
-            if ( X > maxX ) {
-                maxX = X;
-            }
-            
-            if ( Z > maxZ ) {
-                maxZ = Z;
-            }
-            
-            //  The map is this.sizeInMeters meters
-            //  The size of a texture in meters is : 5.0
-            //  Therefor, the uvs needs to be split in sizeInMeters / 5.0;
-            //this.uvBuffer[indexTexture++] = U * (this.sizeInMeters / 5.0);
-            //this.uvBuffer[indexTexture++] = V * (this.sizeInMeters / 5.0);
-        }
-    }
-    
-    console.log("GPU grid maximums : " + maxX + " " + maxZ + " res : " + resolution);
-    
-    return tmpBuffer;
-
-};
-
-Map.prototype.tileGenerateIndexes = function(resolution) {
-
-    this.tileIndexesBuffer = new Uint32Array((resolution - 1) * (resolution - 1) * 6);
-    
-    var index = 0;
-    
-    for (var j = 0; j < (resolution - 1); j++) {
-        for (var i = 0; i < (resolution - 1); i++) {
-            
-            var iVertexIndex = (j * resolution) + i;
-
-            // Top triangle
-            this.tileIndexesBuffer[index++] = iVertexIndex;                     // V0
-            this.tileIndexesBuffer[index++] = iVertexIndex + resolution + 1;         // V3
-            this.tileIndexesBuffer[index++] = iVertexIndex + 1;                 // V1
-            // Bottom triangle
-            this.tileIndexesBuffer[index++] = iVertexIndex;                     // V0
-            this.tileIndexesBuffer[index++] = iVertexIndex + resolution;             // V2
-            this.tileIndexesBuffer[index++] = iVertexIndex + resolution + 1;         // V3
-            
-        }
-    }
-
-    return index;
-};
-
-Map.prototype.tileInitBuffers = function(size, resolution) {
-
-    var gl = this.engine.gl;
-
-    this.buffers['tile'] = [];
-    
-    this.buffers['tile']['position'] = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers['tile']['position']);
-    gl.bufferData(gl.ARRAY_BUFFER, this.tilePositionBuffer, gl.STATIC_DRAW);
-    this.buffers['tile']['position'].itemSize = 3;
-    this.buffers['tile']['position'].numItems = resolution * resolution;
-
-    this.buffers['tile']['indexes'] = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers['tile']['indexes']);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.tileIndexesBuffer, gl.STATIC_DRAW);
-    this.buffers['tile']['indexes'].itemSize = 1;
-    this.buffers['tile']['indexes'].numItems = (resolution - 1) * (resolution - 1) * 6;
-    
-    this.buffers['tile']['resolution'] = resolution;
-    this.buffers['tile']['size'] = size;
 };
 
 
 /**
-*   Render terrain using GPU displacement
-*/
+ *   Render terrain using GPU displacement
+ */
 Map.prototype.renderLodGPU = function(prog, mode) {
 
     var gl = this.engine.gl;
@@ -191,13 +83,13 @@ Map.prototype.renderLodGPU = function(prog, mode) {
     gl.useProgram(prog);
     gl.enable(gl.DEPTH_TEST);
     /*
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, textures['sand']);
-    gl.uniform1i(prog['uSamplerSand'], 0);
-    
-    gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_2D, textures['sandNormal']);
-    gl.uniform1i(prog['uSamplerSandNormal'], 1);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, textures['sand']);
+      gl.uniform1i(prog['uSamplerSand'], 0);
+      
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, textures['sandNormal']);
+      gl.uniform1i(prog['uSamplerSandNormal'], 1);
     */
     gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_2D, textures['sand2']);
@@ -215,14 +107,14 @@ Map.prototype.renderLodGPU = function(prog, mode) {
     gl.bindTexture(gl.TEXTURE_2D, textures['dirtNormal']);
     gl.uniform1i(prog['uSamplerDirtNormal'], 5);
     /*
-    gl.activeTexture(gl.TEXTURE6);
-    gl.bindTexture(gl.TEXTURE_2D, textures['rock']);
-    gl.uniform1i(prog['uSamplerRock'], 6);
-    
-    gl.activeTexture(gl.TEXTURE7);
-    gl.bindTexture(gl.TEXTURE_2D, textures['rockNormal']);
-    gl.uniform1i(prog['uSamplerRockNormal'], 7);
-     */
+      gl.activeTexture(gl.TEXTURE6);
+      gl.bindTexture(gl.TEXTURE_2D, textures['rock']);
+      gl.uniform1i(prog['uSamplerRock'], 6);
+      
+      gl.activeTexture(gl.TEXTURE7);
+      gl.bindTexture(gl.TEXTURE_2D, textures['rockNormal']);
+      gl.uniform1i(prog['uSamplerRockNormal'], 7);
+    */
     gl.activeTexture(gl.TEXTURE8);
     gl.bindTexture(gl.TEXTURE_2D, this.engine.fbo['terrainDepth0'].texture);
     gl.uniform1i(prog['uDepthMaps[0]'], 8);
@@ -275,7 +167,7 @@ Map.prototype.renderLodGPU = function(prog, mode) {
     this.nbVertexesRendered = 0;
     
     // Only move the terrain mesh in blockScale increment
- 
+    
     var camX = this.engine.cameraPos[0] + this.blockScale;
     var camZ = this.engine.cameraPos[2] + this.blockScale;
     
@@ -284,7 +176,7 @@ Map.prototype.renderLodGPU = function(prog, mode) {
     
     // Half size of 1 Lod Level (in world units)   
     var centerOffset = this.blockScale * ( this.levelSize + ( this.levelSize / 2 ) );
-   
+    
     var prevPart = '';
     
     // Start rendering each part of the grid
@@ -348,11 +240,11 @@ Map.prototype.isSquareInsideMap = function(square, offset) {
 };
 
 /**
-*   Add a new grid object to the list
-*
-*   @param {string} name of the grid buffer
-*   @param {array} x, y offset to position the grid when rendering
-*/
+ *   Add a new grid object to the list
+ *
+ *   @param {string} name of the grid buffer
+ *   @param {array} x, y offset to position the grid when rendering
+ */
 Map.prototype.addGridObject = function(bufferName, offset, sizeW, sizeH) {
 
     // create calculate the 4 corners of the grid
@@ -406,7 +298,7 @@ Map.prototype.createLodGrid = function() {
     
     // Transition lines between two cube of the same LOD level
     for ( i = 0; i < NB_LEVELS - 1; ++i ) {
-    
+	
         var levelMultiplier = Math.pow(2, i + 1); // 2 4 8 16 ..
         
         var lengthLine = Math.ceil(LEVELS_SIZE / levelMultiplier);
@@ -422,7 +314,7 @@ Map.prototype.createLodGrid = function() {
         this.gridsLine['l' + i + '-0'].initMesh(lengthLine, 2, blockScaleLine, this.blockScale, 1.0, 0);
         this.gridsLine['l' + i + '-0'].createIndexes();
         this.gridsLine['l' + i + '-0'].initWebglBuffer(this.engine.gl);
-                               
+        
         this.gridsLine['l' + i + '-1'] = new Grid();
         
         this.gridsLine['l' + i + '-1'].initMesh(2, lengthLine, this.blockScale, blockScaleLine, 1.0, 0);
@@ -468,10 +360,10 @@ Map.prototype.createLodGrid = function() {
     this.gridsLine['cell'].initMesh(2, 2, this.blockScale, this.blockScale, 1.0, 0);
     this.gridsLine['cell'].createIndexes();
     this.gridsLine['cell'].initWebglBuffer(this.engine.gl);
-        
+    
 
     var lengthLevel = this.blockScale * LEVELS_SIZE;
-        
+    
 
     var mid = (NB_LEVELS - 1);
     
@@ -493,8 +385,8 @@ Map.prototype.createLodGrid = function() {
         }
     }
     
-   // Positions of transitions lines
-   for ( var level = 0; level < NB_LEVELS - 1; ++level ) {  
+    // Positions of transitions lines
+    for ( var level = 0; level < NB_LEVELS - 1; ++level ) {  
         
         var X = (level * 2) + 1 ; // 1 3 5 7 ..
         
@@ -507,7 +399,7 @@ Map.prototype.createLodGrid = function() {
             
             var offset1 = [ length - (length * level),
                             length + this.blockScale + ((j - mid)*length)];
-                          
+            
             var o1 = {
                 mesh: 't' + (level + 1) + '-0',
                 position: offset1
@@ -552,14 +444,14 @@ Map.prototype.createLodGrid = function() {
             //this.gridTransitionLines2.push(o3);
             //this.gridTransitionLines2.push(o4);
         }
-   }
+    }
 
     
-   // Position of separation lines
-   for ( var level = 1; level < NB_LEVELS; ++level ) {  
+    // Position of separation lines
+    for ( var level = 1; level < NB_LEVELS; ++level ) {  
 
         for ( i = 0; i < 4; ++i ) {
-           for ( j = 0; j < level * 2; j++ ) {
+            for ( j = 0; j < level * 2; j++ ) {
                 
                 var length = this.blockScale * LEVELS_SIZE;
                 var t = ((Math.floor(i / 2) % 2) * 2) - 1;
@@ -567,23 +459,23 @@ Map.prototype.createLodGrid = function() {
                 var w, h;
                 
                 if ( (i%2) == 1 ) {
-            
+		    
                     translation =   [length + (t * length * level) + this.blockScale, 
-                                    0.0, 
-                                    length + (j - (level - 1)) * length];
-                                    
+                                     0.0, 
+                                     length + (j - (level - 1)) * length];
+                    
                     w = this.blockScale * (LEVELS_SIZE - 1);
                     h = this.blockScale;
                     
                 } else {
                     translation =   [length + (j - (level - 1)) * length,
-                                    0.0, 
-                                    length + (t * length * level) + this.blockScale];
-                                    
+                                     0.0, 
+                                     length + (t * length * level) + this.blockScale];
+                    
                     h = this.blockScale * (LEVELS_SIZE - 1);
                     w = this.blockScale;
                 }
-           
+		
 
                 var o = {
                     mesh: 'l' + (level - 1) + '-' + (i % 2),
@@ -591,11 +483,11 @@ Map.prototype.createLodGrid = function() {
                 };
                 
                 this.addGridObject(o.mesh, o.position, h, w);
-            
+		
                 //this.gridTransitionLines2.push(o);
             }
         }
-   }
+    }
     
     // Create a grid system around the cameraPos
     var X = (NB_LEVELS * 2) - 1;
@@ -617,7 +509,7 @@ Map.prototype.createLodGrid = function() {
                     };
                     
                     this.addGridObject(o.mesh, o.position, this.blockScale * (LEVELS_SIZE - 1)/DIVISION, this.blockScale * (LEVELS_SIZE - 1)/DIVISION);
-            
+		    
                     //this.gridTransitionLines2.push(o);
                 }
             }
@@ -629,8 +521,6 @@ Map.prototype.createLodGrid = function() {
 Map.prototype.renderGridCorners = function() {
 
     var gl = this.engine.gl;
-      
-
     
     var camX = this.engine.cameraPos[0] + this.blockScale;
     var camZ = this.engine.cameraPos[2] + this.blockScale;
@@ -693,15 +583,15 @@ Map.prototype.renderGridCorners = function() {
         
         // send the position to the nearest multiple of this.blockScale
         /*
-        var square = [];
-        var s = this.blockScale * (this.levelSize / 4.0);
-        
-        square[0] = [translation[0], translation[2]];
-        square[1] = [translation[0] + s, translation[2]];
-        square[2] = [translation[0], translation[2] + s];
-        square[3] = [translation[0] + s, translation[2] + s];
+          var square = [];
+          var s = this.blockScale * (this.levelSize / 4.0);
+          
+          square[0] = [translation[0], translation[2]];
+          square[1] = [translation[0] + s, translation[2]];
+          square[2] = [translation[0], translation[2] + s];
+          square[3] = [translation[0] + s, translation[2] + s];
         */
-       // if ( this.isSquareInsideMap(square) ) {
+	// if ( this.isSquareInsideMap(square) ) {
 
         
         for ( var j = 0; j < 4; j++ ) {
@@ -713,7 +603,7 @@ Map.prototype.renderGridCorners = function() {
             }
             
             //if ( line.corners !== undefined ) {
-          
+            
             var corner = line.corners[j];
             var translation2 = [];
             
@@ -726,10 +616,10 @@ Map.prototype.renderGridCorners = function() {
             
             
             //}
-        
-        }
             
-       // }
+        }
+        
+	// }
     }
 
     gl.disableVertexAttribArray(prog.aVertexPosition);
@@ -737,19 +627,12 @@ Map.prototype.renderGridCorners = function() {
 
 };
 
-
-Map.prototype.initTile = function(size, resolution) {
-    this.tilePositionBuffer = this.createTile(size, resolution);
-    this.tileGenerateIndexes(resolution);
-    this.tileInitBuffers(size, resolution);
-};
-
 /**
-*   Download the heightMap
-*   @param {filename}
-*   @param {int} bit size (16 or 32 bits)
-*   @return {promise} jQuery promise once the file has been succefully downloaded
-*/
+ *   Download the heightMap
+ *   @param {filename}
+ *   @param {int} bit size (16 or 32 bits)
+ *   @return {promise} jQuery promise once the file has been succefully downloaded
+ */
 Map.prototype.downloadHeightMap = function(file, bitSize) {
     
     var that = this;
@@ -772,104 +655,104 @@ Map.prototype.downloadHeightMap = function(file, bitSize) {
         
         d.resolve();
     };
-		
+    
     xhr.send();
     
     return d.promise();
 };
 
 var SimplexNoise = function(r) {
-	if (r == undefined) r = Math;
-  this.grad3 = [[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0], 
-                                 [1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1], 
-                                 [0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]]; 
-  this.p = [];
-  for (var i=0; i<256; i++) {
-	  this.p[i] = Math.floor(r.random()*256);
-  }
-  // To remove the need for index wrapping, double the permutation table length 
-  this.perm = []; 
-  for(var i=0; i<512; i++) {
-		this.perm[i]=this.p[i & 255];
-	} 
- 
-  // A lookup table to traverse the simplex around a given point in 4D. 
-  // Details can be found where this table is used, in the 4D noise method. 
-  this.simplex = [ 
-    [0,1,2,3],[0,1,3,2],[0,0,0,0],[0,2,3,1],[0,0,0,0],[0,0,0,0],[0,0,0,0],[1,2,3,0], 
-    [0,2,1,3],[0,0,0,0],[0,3,1,2],[0,3,2,1],[0,0,0,0],[0,0,0,0],[0,0,0,0],[1,3,2,0], 
-    [0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0], 
-    [1,2,0,3],[0,0,0,0],[1,3,0,2],[0,0,0,0],[0,0,0,0],[0,0,0,0],[2,3,0,1],[2,3,1,0], 
-    [1,0,2,3],[1,0,3,2],[0,0,0,0],[0,0,0,0],[0,0,0,0],[2,0,3,1],[0,0,0,0],[2,1,3,0], 
-    [0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0], 
-    [2,0,1,3],[0,0,0,0],[0,0,0,0],[0,0,0,0],[3,0,1,2],[3,0,2,1],[0,0,0,0],[3,1,2,0], 
-    [2,1,0,3],[0,0,0,0],[0,0,0,0],[0,0,0,0],[3,1,0,2],[0,0,0,0],[3,2,0,1],[3,2,1,0]]; 
+    if (r == undefined) r = Math;
+    this.grad3 = [[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0], 
+                  [1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1], 
+                  [0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]]; 
+    this.p = [];
+    for (var i=0; i<256; i++) {
+	this.p[i] = Math.floor(r.random()*256);
+    }
+    // To remove the need for index wrapping, double the permutation table length 
+    this.perm = []; 
+    for(var i=0; i<512; i++) {
+	this.perm[i]=this.p[i & 255];
+    } 
+    
+    // A lookup table to traverse the simplex around a given point in 4D. 
+    // Details can be found where this table is used, in the 4D noise method. 
+    this.simplex = [ 
+	[0,1,2,3],[0,1,3,2],[0,0,0,0],[0,2,3,1],[0,0,0,0],[0,0,0,0],[0,0,0,0],[1,2,3,0], 
+	[0,2,1,3],[0,0,0,0],[0,3,1,2],[0,3,2,1],[0,0,0,0],[0,0,0,0],[0,0,0,0],[1,3,2,0], 
+	[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0], 
+	[1,2,0,3],[0,0,0,0],[1,3,0,2],[0,0,0,0],[0,0,0,0],[0,0,0,0],[2,3,0,1],[2,3,1,0], 
+	[1,0,2,3],[1,0,3,2],[0,0,0,0],[0,0,0,0],[0,0,0,0],[2,0,3,1],[0,0,0,0],[2,1,3,0], 
+	[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0], 
+	[2,0,1,3],[0,0,0,0],[0,0,0,0],[0,0,0,0],[3,0,1,2],[3,0,2,1],[0,0,0,0],[3,1,2,0], 
+	[2,1,0,3],[0,0,0,0],[0,0,0,0],[0,0,0,0],[3,1,0,2],[0,0,0,0],[3,2,0,1],[3,2,1,0]]; 
 };
- 
+
 SimplexNoise.prototype.dot = function(g, x, y) { 
-	return g[0]*x + g[1]*y;
+    return g[0]*x + g[1]*y;
 };
- 
+
 SimplexNoise.prototype.noise = function(xin, yin) { 
-  var n0, n1, n2; // Noise contributions from the three corners 
-  // Skew the input space to determine which simplex cell we're in 
-  var F2 = 0.5*(Math.sqrt(3.0)-1.0); 
-  var s = (xin+yin)*F2; // Hairy factor for 2D 
-  var i = Math.floor(xin+s); 
-  var j = Math.floor(yin+s); 
-  var G2 = (3.0-Math.sqrt(3.0))/6.0; 
-  var t = (i+j)*G2; 
-  var X0 = i-t; // Unskew the cell origin back to (x,y) space 
-  var Y0 = j-t; 
-  var x0 = xin-X0; // The x,y distances from the cell origin 
-  var y0 = yin-Y0; 
-  // For the 2D case, the simplex shape is an equilateral triangle. 
-  // Determine which simplex we are in. 
-  var i1, j1; // Offsets for second (middle) corner of simplex in (i,j) coords 
-  if(x0>y0) {i1=1; j1=0;} // lower triangle, XY order: (0,0)->(1,0)->(1,1) 
-  else {i1=0; j1=1;}      // upper triangle, YX order: (0,0)->(0,1)->(1,1) 
-  // A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and 
-  // a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where 
-  // c = (3-sqrt(3))/6 
-  var x1 = x0 - i1 + G2; // Offsets for middle corner in (x,y) unskewed coords 
-  var y1 = y0 - j1 + G2; 
-  var x2 = x0 - 1.0 + 2.0 * G2; // Offsets for last corner in (x,y) unskewed coords 
-  var y2 = y0 - 1.0 + 2.0 * G2; 
-  // Work out the hashed gradient indices of the three simplex corners 
-  var ii = i & 255; 
-  var jj = j & 255; 
-  var gi0 = this.perm[ii+this.perm[jj]] % 12; 
-  var gi1 = this.perm[ii+i1+this.perm[jj+j1]] % 12; 
-  var gi2 = this.perm[ii+1+this.perm[jj+1]] % 12; 
-  // Calculate the contribution from the three corners 
-  var t0 = 0.5 - x0*x0-y0*y0; 
-  if(t0<0) n0 = 0.0; 
-  else { 
-    t0 *= t0; 
-    n0 = t0 * t0 * this.dot(this.grad3[gi0], x0, y0);  // (x,y) of grad3 used for 2D gradient 
-  } 
-  var t1 = 0.5 - x1*x1-y1*y1; 
-  if(t1<0) n1 = 0.0; 
-  else { 
-    t1 *= t1; 
-    n1 = t1 * t1 * this.dot(this.grad3[gi1], x1, y1); 
-  }
-  var t2 = 0.5 - x2*x2-y2*y2; 
-  if(t2<0) n2 = 0.0; 
-  else { 
-    t2 *= t2; 
-    n2 = t2 * t2 * this.dot(this.grad3[gi2], x2, y2); 
-  } 
-  // Add contributions from each corner to get the final noise value. 
-  // The result is scaled to return values in the interval [-1,1]. 
-  return 70.0 * (n0 + n1 + n2); 
+    var n0, n1, n2; // Noise contributions from the three corners 
+    // Skew the input space to determine which simplex cell we're in 
+    var F2 = 0.5*(Math.sqrt(3.0)-1.0); 
+    var s = (xin+yin)*F2; // Hairy factor for 2D 
+    var i = Math.floor(xin+s); 
+    var j = Math.floor(yin+s); 
+    var G2 = (3.0-Math.sqrt(3.0))/6.0; 
+    var t = (i+j)*G2; 
+    var X0 = i-t; // Unskew the cell origin back to (x,y) space 
+    var Y0 = j-t; 
+    var x0 = xin-X0; // The x,y distances from the cell origin 
+    var y0 = yin-Y0; 
+    // For the 2D case, the simplex shape is an equilateral triangle. 
+    // Determine which simplex we are in. 
+    var i1, j1; // Offsets for second (middle) corner of simplex in (i,j) coords 
+    if(x0>y0) {i1=1; j1=0;} // lower triangle, XY order: (0,0)->(1,0)->(1,1) 
+    else {i1=0; j1=1;}      // upper triangle, YX order: (0,0)->(0,1)->(1,1) 
+    // A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and 
+    // a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where 
+    // c = (3-sqrt(3))/6 
+    var x1 = x0 - i1 + G2; // Offsets for middle corner in (x,y) unskewed coords 
+    var y1 = y0 - j1 + G2; 
+    var x2 = x0 - 1.0 + 2.0 * G2; // Offsets for last corner in (x,y) unskewed coords 
+    var y2 = y0 - 1.0 + 2.0 * G2; 
+    // Work out the hashed gradient indices of the three simplex corners 
+    var ii = i & 255; 
+    var jj = j & 255; 
+    var gi0 = this.perm[ii+this.perm[jj]] % 12; 
+    var gi1 = this.perm[ii+i1+this.perm[jj+j1]] % 12; 
+    var gi2 = this.perm[ii+1+this.perm[jj+1]] % 12; 
+    // Calculate the contribution from the three corners 
+    var t0 = 0.5 - x0*x0-y0*y0; 
+    if(t0<0) n0 = 0.0; 
+    else { 
+	t0 *= t0; 
+	n0 = t0 * t0 * this.dot(this.grad3[gi0], x0, y0);  // (x,y) of grad3 used for 2D gradient 
+    } 
+    var t1 = 0.5 - x1*x1-y1*y1; 
+    if(t1<0) n1 = 0.0; 
+    else { 
+	t1 *= t1; 
+	n1 = t1 * t1 * this.dot(this.grad3[gi1], x1, y1); 
+    }
+    var t2 = 0.5 - x2*x2-y2*y2; 
+    if(t2<0) n2 = 0.0; 
+    else { 
+	t2 *= t2; 
+	n2 = t2 * t2 * this.dot(this.grad3[gi2], x2, y2); 
+    } 
+    // Add contributions from each corner to get the final noise value. 
+    // The result is scaled to return values in the interval [-1,1]. 
+    return 70.0 * (n0 + n1 + n2); 
 };
 
 /**
-*
-* Is used to storred an height map array into a texture
-* this is used when draw the terrain in GPU mode
-*/
+ *
+ * Is used to storred an height map array into a texture
+ * this is used when draw the terrain in GPU mode
+ */
 Map.prototype.randomHeightMap = function(height, width) {
     
     var gl = this.engine.gl;
@@ -916,10 +799,10 @@ Map.prototype.randomHeightMap = function(height, width) {
 };
 
 /**
-*
-* Is used to storred an height map array into a texture
-* this is used when draw the terrain in GPU mode
-*/
+ *
+ * Is used to storred an height map array into a texture
+ * this is used when draw the terrain in GPU mode
+ */
 Map.prototype.convertArray = function() {
 
     var gl = this.engine.gl;
@@ -980,7 +863,7 @@ Map.prototype.convertArray = function() {
 Map.prototype.getHeightAtCPU = function(x, z) {
     var realX = x / this.blockScale;
     var realZ = z / this.blockScale;
-  
+    
     var floorX = realX | 0;
     var floorZ = realZ | 0;
     var i;
@@ -1025,10 +908,10 @@ Map.prototype.getHeightAtCPU = function(x, z) {
 };
 
 Map.prototype.getHeightAtGPU = function(x, z) {
-        
+    
     var realX = (x / this.blockScale) - 0.5;
     var realZ = this.size.h - ((z / this.blockScale) + 0.5);
-  
+    
     var floorX = realX | 0;
     var floorZ = realZ | 0;
     
@@ -1075,11 +958,11 @@ Map.prototype.getHeightAtGPU = function(x, z) {
 
 
 /**
-*   Return the height Y based on the (x, z) position
-*
-*   @param {float} x position
-*   @param {float} z position
-*/
+ *   Return the height Y based on the (x, z) position
+ *
+ *   @param {float} x position
+ *   @param {float} z position
+ */
 Map.prototype.getHeightAt = function(x, z) {
     if ( this.renderingMode == "cpu" ) {
         return this.getHeightAtCPU(x, z);
@@ -1136,7 +1019,7 @@ Map.prototype.generateVertexPosition = function() {
             
             //  The map is this.sizeInMeters meters
             //  The size of a texture in meters is : 5.0
-            //  Therefor, the uvs needs to be split in sizeInMeters / 5.0;
+            //  Therefore, the uvs needs to be split in sizeInMeters / 5.0;
             this.uvBuffer[indexTexture++] = U * (this.sizeInMeters / 5.0);
             this.uvBuffer[indexTexture++] = V * (this.sizeInMeters / 5.0);
         }
@@ -1162,16 +1045,7 @@ Map.prototype.generateIndexes = function() {
 	for (var i = 0; i < (width - 1); i++) {
 	    
 	    var iVertexIndex = (j * width) + i;
-            /*
-            // Top triangle
-	    this.indexesBuffer[index++] = iVertexIndex;                     // V0
-	    this.indexesBuffer[index++] = iVertexIndex + width;             // V2
-	    this.indexesBuffer[index++] = iVertexIndex + width + 1;         // V3
-	    // Bottom triangle
-	    this.indexesBuffer[index++] = iVertexIndex + width + 1;         // V3
-	    this.indexesBuffer[index++] = iVertexIndex;                     // V0
-	    this.indexesBuffer[index++] = iVertexIndex + 1;                 // V1
-            */
+
             // Top triangle
 	    this.indexesBuffer[index++] = iVertexIndex;                     // V0
 	    this.indexesBuffer[index++] = iVertexIndex + width + 1;         // V3
@@ -1192,11 +1066,11 @@ function normalize(array, i) {
     var x = array[i], y = array[i + 1], z = array[i + 2];
 
     var len = Math.sqrt(x*x + y*y + z*z);
-        
+    
     if (len == 1) {
         return;
     }
-     
+    
     len = 1 / len;
 
     array[i]     = x * len;
@@ -1264,7 +1138,7 @@ Map.prototype.generateNormals = function() {
 	v2[0] = this.positionBuffer[(v3_index * 3) + 0];
 	v2[1] = this.positionBuffer[(v3_index * 3) + 1];
 	v2[2] = this.positionBuffer[(v3_index * 3) + 2];
- 
+	
         // calculate normal
         sub1[0] = v1[0] - v0[0];
         sub1[1] = v1[1] - v0[1];
@@ -1276,7 +1150,7 @@ Map.prototype.generateNormals = function() {
         
         vec3.cross(sub1, sub2, normal);
         vec3.normalize(normal);
-  
+	
         // add the normal for each vertex of the triangle
         
         this.normalBuffer[(v1_index * 3) + 0] += normal[0];
@@ -1486,7 +1360,7 @@ Map.prototype.render = function(prog) {
         gl.enableVertexAttribArray(prog.aVertexNormal);
         gl.enableVertexAttribArray(prog.aTexturePosition);
         gl.enableVertexAttribArray(prog.aVertexTangent);
-    
+	
         this.renderCPU(prog);
         
         gl.disableVertexAttribArray(prog.aVertexPosition);
@@ -1498,9 +1372,9 @@ Map.prototype.render = function(prog) {
 
 	//TODO: streamline cpu, gpuLod and gpu mode.
 	// some take a prog in parameter and this one do not
-    
+	
         this.renderLodGPU(prog, gl.TRIANGLES);
-    
+	
     } else {
 
 	// This mode was only done for testing purposes. This provides mostly no
@@ -1510,16 +1384,12 @@ Map.prototype.render = function(prog) {
 	//
 	// GPU rendering mode, we need :
 	//     - a PLANE grid the size of the map (aVertexPosition)
-	//     - the textures coordinates (aTextureposition) (????)
 	
         gl.enableVertexAttribArray(prog.aVertexPosition);
-        //gl.enableVertexAttribArray(prog.aTexturePosition);
-        
+
         this.renderGPU(prog);
         
         gl.disableVertexAttribArray(prog.aVertexPosition);
-       // gl.disableVertexAttribArray(prog.aTexturePosition);
-
     }
 };
 
@@ -1550,7 +1420,7 @@ Map.prototype.renderDepthMapGPU = function(split_id) {
     }
 
     gl.uniform1f(prog.uMode, 2);
-      
+    
     gl.enableVertexAttribArray(prog.aVertexPosition);
     
     // Global variables for whole terrain
@@ -1566,7 +1436,7 @@ Map.prototype.renderDepthMapGPU = function(split_id) {
     this.nbVertexesRendered = 0;
     
     // Only move the terrain mesh in blockScale increment
- 
+    
     var camX = this.engine.cameraPos[0] + this.blockScale;
     var camZ = this.engine.cameraPos[2] + this.blockScale;
     
@@ -1575,7 +1445,7 @@ Map.prototype.renderDepthMapGPU = function(split_id) {
     
     // Half size of 1 Lod Level (in world units)   
     var centerOffset = this.blockScale * ( this.levelSize + ( this.levelSize / 2 ) );
-   
+    
     var prevPart = '';
     
     // Start rendering each part of the grid
@@ -1705,7 +1575,7 @@ Map.prototype.renderGPU = function(prog) {
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers['chunk'+i]['position']);
         gl.vertexAttribPointer(prog['aVertexPosition'], this.buffers['chunk'+i]['position'].itemSize, gl.FLOAT, false, 0, 0);
-                
+        
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers['chunk'+i]['indexes']);
         
         if ( this.engine.ext['uintElementIndex'] ) {
@@ -1791,7 +1661,7 @@ Map.prototype.renderCPU = function(prog) {
 
     var i = 0;
     while ( this.buffers['chunk' + i] != undefined ) {
-    
+	
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers['chunk'+i]['position']);
         gl.vertexAttribPointer(prog['aVertexPosition'], this.buffers['chunk'+i]['position'].itemSize, gl.FLOAT, false, 0, 0);
         
@@ -1800,10 +1670,10 @@ Map.prototype.renderCPU = function(prog) {
         
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers['chunk'+i]['tangents']);
         gl.vertexAttribPointer(prog['aVertexTangent'], this.buffers['chunk'+i]['tangents'].itemSize, gl.FLOAT, false, 0, 0);
-    
+	
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers['chunk'+i]['uv']);
         gl.vertexAttribPointer(prog['aTexturePosition'], this.buffers['chunk'+i]['uv'].itemSize, gl.FLOAT, false, 0, 0);
-	        
+	
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers['chunk'+i]['indexes']);
         
         if(this.engine.ext['uintElementIndex'])
@@ -1817,7 +1687,7 @@ Map.prototype.renderCPU = function(prog) {
 };
 
 Map.prototype.convertHeightMapToFloat = function(to, w, h) {
-    	
+    
     'use strict';
     
     var gl = this.gl;
@@ -1827,17 +1697,17 @@ Map.prototype.convertHeightMapToFloat = function(to, w, h) {
     }
     else {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	}
+    }
     
     // Set up the verticies and indices
     var quadVerts = [
-        -1,  1,  0, 1,
-        -1, -1,  0, 0,
-         1,  1,  1, 1,
+            -1,  1,  0, 1,
+            -1, -1,  0, 0,
+        1,  1,  1, 1,
 
-        -1, -1,  0, 0,
-         1, -1,  1, 0,
-         1,  1,  1, 1
+            -1, -1,  0, 0,
+        1, -1,  1, 0,
+        1,  1,  1, 1
     ];
 
     var quadVertBuffer = gl.createBuffer();
@@ -1879,8 +1749,8 @@ Map.prototype.convertHeightMapToFloat = function(to, w, h) {
 };
 
 /**
-*   Cast a ray on the terrain
-*/
+ *   Cast a ray on the terrain
+ */
 Map.prototype.rayIntersect = function(translation, direction) {
     
     var MAX_Y = 0;

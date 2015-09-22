@@ -31,9 +31,6 @@ var Engine = function (gl) {
     
     'use strict';
 
-    // ??
-    this.options = undefined;
-
     // current state of the program (stopped, paused etc..)
     this.state = states.STOPPED_0;
 
@@ -46,12 +43,9 @@ var Engine = function (gl) {
     // array of shader programs
     this.shaderPrograms = undefined;
 
-    // ??
+    // value of the loading bar at the start
     this.loadingVal = undefined;
 
-    // ??
-    this.t = false;
-    
     // ratio from opengl units to meters
     this.unitToMeter = 0;
 
@@ -73,13 +67,10 @@ var Engine = function (gl) {
     // reference to the mouse class
     this.mouse = undefined;
 
-    // ?? (probably not being used yet..)
-    this.game = undefined;
-
-    // ?? 
+    // webgl buffers 
     this.buffers = [];
 
-    // ??
+    // template of object mesh (cube, rectangles etc..)
     this.objectsModels = [];
 
     // reference to the graphical interface (written in JS, not opengl)
@@ -91,7 +82,7 @@ var Engine = function (gl) {
     // array of framebuffers
     this.fbo = [];
 
-    // ??
+    // used for object selection (scene picking), this should contain each color of each pixel after a left-click
     this.colorMap = [];
 
     // size of each depthMap used for shadows
@@ -110,7 +101,6 @@ var Engine = function (gl) {
     this.yawRate = 0;
     this.pitchRate = 0;
 
-    // ??
     this.flowMapOffset0 = 0.0;
     this.flowMapOffset1 = 0.0;
         
@@ -244,25 +234,11 @@ Engine.prototype.start = function() {
         }
     });
     
-    // Load objects models
-    /*
-      this.initObjectsModels().then(function(){
-      
-      
-      nbTask -= 1;
-      if(!nbTask) {
-      d.resolve();
-      }
-      });
-    */
-    
     // Create and load map
     this.map = new Map(this);
 
-    
-
-    this.map.downloadHeightMap("terrain5.raw", 16).then(function(){
-    //this.map.downloadHeightMap("terrain0-16bbp-257x257.raw", 16).then(function(){
+    this.map.downloadHeightMap("heightmaps/terrain5.raw", 16).then(function(){
+    //this.map.downloadHeightMap("heightmaps/terrain0-16bbp-257x257.raw", 16).then(function(){
 
         var now, tmp;
 
@@ -337,9 +313,9 @@ Engine.prototype.start = function() {
     
     // load textures
     this.initTextures(50.0).then(function(){  
-        nbTask -= 1;
-        
-            
+
+	nbTask -= 1;
+           
         if(!nbTask) {
             d.resolve();
         }
@@ -376,16 +352,19 @@ Engine.prototype.start = function() {
             that.map.convertArray();
 	    //that.map.randomHeightMap(512.0, 512.0)
 	    
-	    // if lod mode is also activated, we create a grid
+	    // if lod mode is also activated, we need to create a grid
 	    if ( that.map.lod ) {
 		
 		that.map.createLodGrid();
 
 	    }
         }
-        
+	
+        // main rendering loop
         that.renderTick(0);
-        that.logicTick(new Date().getTime());
+
+	// main logic loop
+	that.logicTick(new Date().getTime());
     });
 };
 
@@ -435,390 +414,6 @@ function sqr(val) {
 
     return val * val;
 }
-
-/**
- *   NOT USED
- *   Does the intersection between two points and a map
- *   @param {vec3}
- *   @param {vec3}
- *   @return {vec3}
- */
-Engine.prototype.intersectMap = function(p1, p2) {
-    
-    'use strict';
-    
-    var vec = vec3.normalize(vec3.subtract(p1, p2, []));
-    //var mapSize = this.map.size.h*this.map.blockScale;
-    //var h = this.map.heightScale;
-    /*
-      if(p2[0] < 0){
-
-      var dist = p1[0]/vec[0];
-      
-      p2[0] = p1[0] - (vec[0]*dist);
-      //p2[1] = p1[1] - (vec[1]*dist);
-      p2[2] = p1[2] - (vec[2]*dist);
-      }
-      
-      if(p2[0] > mapSize) {       
-
-      var dist = (p1[0]-mapSize)/vec[0];
-
-      p2[0] = p1[0] - (vec[0]*dist);
-      //p2[1] = p1[1] - (vec[1]*dist);
-      p2[2] = p1[2] - (vec[2]*dist);   
-      }
-    */
-    if(p2[1] < 0) {
-
-        var dist = (p1[1])/vec[1];
-
-        p2[0] = p1[0] - (vec[0]*dist);
-        p2[1] = p1[1] - (vec[1]*dist);
-        p2[2] = p1[2] - (vec[2]*dist); 
-        
-    }
-    /*
-      if(p2[1] > h) {
-
-      var dist = (p1[1]-h)/vec[1];
-
-      p2[0] = p1[0] - (vec[0]*dist);
-      p2[1] = p1[1] - (vec[1]*dist);
-      p2[2] = p1[2] - (vec[2]*dist); 
-      }
-    */
-    /*
-      if(p2[2] > mapSize) {
-
-      var dist = (p1[2]-mapSize)/vec[2];
-
-      p2[0] = p1[0] - (vec[0]*dist);
-      //p2[1] = p1[1] - (vec[1]*dist);
-      p2[2] = p1[2] - (vec[2]*dist);  
-      }
-      
-      if(p2[2] < 0) {
-      
-      var dist = (p1[2]-0)/vec[2];
-
-      p2[0] = p1[0] - (vec[0]*dist);
-      //p2[1] = p1[1] - (vec[1]*dist);
-      p2[2] = p1[2] - (vec[2]*dist); 
-      }
-    */
-    return p2;
-};
-/*
-  var pointInPolygon = function(point, points){
-
-  'use strict';
-  
-  var length = points.length;
-  var counter = 0;
-  var x_inter;
-  var p1 = points[0];
-  var i;
-  for(i=1;i<=length;i+=1){
-  var p2=points[i%length];
-  if(point[1]>Math.min(p1[1],p2[1])){
-  if(point[1]<=Math.max(p1[1],p2[1])){
-  if(point[0]<=Math.max(p1[0],p2[0])){
-  if(p1[1]!=p2[1]){
-  x_inter=(point[1]-p1[1])*(p2[0]-p1[0])/(p2[1]-p1[1])+p1[0];
-  if(p1[0]==p2[0]||point[0]<=x_inter){
-  counter++;
-  }
-  }
-  }
-  }
-  }
-  p1=p2;
-  }
-  return(counter%2==1);
-  }
-
-  function Intersection(status){
-  if(arguments.length>0){
-  this.init(status);
-  }
-  }
-
-  Intersection.prototype.init=function(status){
-  this.status=status;
-  this.points=new Array();
-  };
-
-  Intersection.prototype.appendPoint=function(point){
-  this.points.push(point);
-  };
-
-  Intersection.prototype.appendPoints=function(points){
-  this.points=this.points.concat(points);
-  };
-
-  Intersection.intersectLineLine=function(a1,a2,b1,b2){
-
-  var result;
-  var ua_t=(b2[0]-b1[0])*(a1[1]-b1[1])-(b2[1]-b1[1])*(a1[0]-b1[0]);
-  var ub_t=(a2[0]-a1[0])*(a1[1]-b1[1])-(a2[1]-a1[1])*(a1[0]-b1[0]);
-  var u_b=(b2[1]-b1[1])*(a2[0]-a1[0])-(b2[0]-b1[0])*(a2[1]-a1[1]);
-  if(u_b!=0){
-  var ua=ua_t/u_b;
-  var ub=ub_t/u_b;
-  if(0<=ua&&ua<=1&&0<=ub&&ub<=1){
-
-  result=new Intersection("Intersection");
-  result.points.push([a1[0]+ua*(a2[0]-a1[0]),a1[1]+ua*(a2[1]-a1[1])]);
-  }else{
-  result=new Intersection("No Intersection");
-  }
-  }else{
-
-  if(ua_t==0||ub_t==0){
-  result=new Intersection("Coincident");
-  }else{
-  result=new Intersection("Parallel");
-  }
-  }
-  return result;
-  };
-
-
-  Intersection.intersectLinePolygon=function(a1, a2, points){
-  var result=new Intersection("No Intersection");
-  var length=points.length;
-
-  for(var i=0;i<length;i++){
-  var b1=points[i];
-  var b2=points[(i+1)%length];
-  var inter=Intersection.intersectLineLine(a1,a2,b1,b2);
-  result.appendPoints(inter.points);
-  }
-  if(result.points.length>0)
-  result.status="Intersection";
-  return result;
-  };
-
-
-  Intersection.intersectPolygonPolygon=function(points1, points2){
-  var result=new Intersection("No Intersection");
-  var length=points1.length;
-
-  for(var i=0;i<length;i++){
-  var a1=points1[i];
-  var a2=points1[(i+1)%length];
-  var inter=Intersection.intersectLinePolygon(a1,a2,points2);
-  result.appendPoints(inter.points);
-  }
-  if(result.points.length>0)
-  result.status="Intersection";
-  return result;
-  };
-*/
-
-/*
-  Engine.prototype.viewFrustum = function() {
-
-  'use strict';
-
-  var gl = this.gl;
-  
-  var mapSize = this.map.size.h*this.map.blockScale;
-  var h = this.map.heightScale;
-  var nearDist = 10.0;
-  var farDist = 1000.0;
-  var fov = 90.0;
-  var ratio = gl.viewportWidth / gl.viewportHeight;
-  var p = this.cameraPos;
-  
-  var d = vec3.create(); 
-  d[0] = -Math.sin(this.cameraYaw*Math.PI/180)*Math.cos(this.cameraPitch*Math.PI/180);
-  d[1] = Math.sin(this.cameraPitch*Math.PI/180);
-  d[2] = -Math.cos(this.cameraYaw*Math.PI/180)*Math.cos(this.cameraPitch*Math.PI/180);
-  
-  // Calculating up and right vectors
-  var right = vec3.normalize(vec3.cross(d, [0.0, 1.0, 0.0], []));
-  var up = vec3.normalize(vec3.cross(right, d, []));
-
-  // Planes width and heigh
-  var Hnear = 2 * Math.tan(fov / 2) * nearDist;
-  var Wnear = Hnear * ratio;
-  
-  var Hfar = 2 * Math.tan(fov / 2) * farDist;
-  var Wfar = Hfar * ratio;
-  
-
-  // fc = p + (d * farDist)
-  var fc = vec3.create();
-  fc[0] = p[0] + (d[0] * farDist);
-  fc[1] = p[1] + (d[1] * farDist);
-  fc[2] = p[2] + (d[2] * farDist);
-  
-  // ftl = fc + (up * Hfar/2) - (right * Wfar/2)
-  var ftl = vec3.create();
-  ftl[0] = fc[0] + (up[0]*Hfar/2) - (right[0]*Wfar/2);
-  ftl[1] = fc[1] + (up[1]*Hfar/2) - (right[1]*Wfar/2);
-  ftl[2] = fc[2] + (up[2]*Hfar/2) - (right[2]*Wfar/2);
-  
-  // fbl = fc - (up * Hfar/2) - (right * Wfar/2)
-  var fbl = vec3.create();
-  fbl[0] = fc[0] - (up[0]*Hfar/2) - (right[0]*Wfar/2);
-  fbl[1] = fc[1] - (up[1]*Hfar/2) - (right[1]*Wfar/2);
-  fbl[2] = fc[2] - (up[2]*Hfar/2) - (right[2]*Wfar/2);
-  
-  // ftr = fc + (up * Hfar/2) + (right * Wfar/2)
-  var ftr = vec3.create();
-  ftr[0] = fc[0] + (up[0]*Hfar/2) + (right[0]*Wfar/2);
-  ftr[1] = fc[1] + (up[1]*Hfar/2) + (right[1]*Wfar/2);
-  ftr[2] = fc[2] + (up[2]*Hfar/2) + (right[2]*Wfar/2);
-  
-  // fbr = fc - (up * Hfar/2) + (right * Wfar/2)
-  var fbr = vec3.create();
-  fbr[0] = fc[0] - (up[0]*Hfar/2) + (right[0]*Wfar/2);
-  fbr[1] = fc[1] - (up[1]*Hfar/2) + (right[1]*Wfar/2);
-  fbr[2] = fc[2] - (up[2]*Hfar/2) + (right[2]*Wfar/2);
-  
-
-  // nc = p + d * nearDist 
-  var nc = vec3.create();
-  nc[0] = p[0] + (d[0] * nearDist);
-  nc[1] = p[1] + (d[1] * nearDist);
-  nc[2] = p[2] + (d[2] * nearDist);
-  
-  // ntl = nc + (up * Hnear/2) - (right * Wnear/2)
-  var ntl = vec3.create();
-  ntl[0] = nc[0] + (up[0]*Hnear/2) - (right[0]*Wnear/2);
-  ntl[1] = nc[1] + (up[1]*Hnear/2) - (right[1]*Wnear/2);
-  ntl[2] = nc[2] + (up[2]*Hnear/2) - (right[2]*Wnear/2);
-  
-  // ntr = nc + (up * Hnear/2) + (right * Wnear/2)
-  var ntr = vec3.create();
-  ntr[0] = nc[0] + (up[0]*Hnear/2) + (right[0]*Wnear/2);
-  ntr[1] = nc[1] + (up[1]*Hnear/2) + (right[1]*Wnear/2);
-  ntr[2] = nc[2] + (up[2]*Hnear/2) + (right[2]*Wnear/2);
-  
-  // nbl = nc - (up * Hnear/2) - (right * Wnear/2)
-  var nbl = vec3.create();
-  nbl[0] = nc[0] - (up[0]*Hnear/2) - (right[0]*Wnear/2);
-  nbl[1] = nc[1] - (up[1]*Hnear/2) - (right[1]*Wnear/2);
-  nbl[2] = nc[2] - (up[2]*Hnear/2) - (right[2]*Wnear/2);
-  
-  // nbr = nc - (up * Hnear/2) + (right * Wnear/2)
-  var nbr = vec3.create();
-  nbr[0] = nc[0] - (up[0]*Hnear/2) + (right[0]*Wnear/2);
-  nbr[1] = nc[1] - (up[1]*Hnear/2) + (right[1]*Wnear/2);
-  nbr[2] = nc[2] - (up[2]*Hnear/2) + (right[2]*Wnear/2);
-  
-  
-  // project ftr, ftl, fbr and fbl on the lower plane of the terrain (Y = 0)
-  ftr = this.intersectMap(ntr, ftr);
-  ftl = this.intersectMap(ntl, ftl);
-  fbr = this.intersectMap(nbr, fbr);
-  fbl = this.intersectMap(nbl, fbl);
-  
-  var view = [];
-  view[0] = [ftl[0], ftl[2]];
-  view[1] = [ftr[0], ftr[2]];
-  view[2] = [fbr[0], fbr[2]];
-  view[3] = [fbl[0], fbl[2]];
-  
-  // Lower plane of the terrain
-  var terrain = [];
-  terrain[0] = [0, 0];
-  terrain[1] = [mapSize, 0];
-  terrain[2] = [mapSize, mapSize];
-  terrain[3] = [0, mapSize];
-  
-  // 2D Intersetion between view and terrain lower plane
-  var result = Intersection.intersectPolygonPolygon(terrain, view);
-
-  var i = 0;
-  var points = [];
-  
-  // The points are a/ the intersections, b/ the points in the middle
-  
-  // a/
-  for(var j = 0; j < result.points.length; j++) {
-  points[i++] = [result.points[j][0], 0, result.points[j][1]];
-  }
-  
-  // b/
-  // Check if any view points is in the terrain
-  if(pointInPolygon(view[0], terrain)) {
-  points[i++] = [view[0][0], 0, view[0][1]];
-  }
-  
-  if(pointInPolygon(view[1], terrain)) {
-  points[i++] = [view[1][0], 0, view[1][1]];
-  }
-  
-  if(pointInPolygon(view[2], terrain)) {
-  points[i++] = [view[2][0], 0, view[2][1]];
-  }
-  
-  if(pointInPolygon(view[3], terrain)) {
-  points[i++] = [view[3][0], 0, view[3][1]];
-  }
-  
-  // Check if any terrain points is in the view
-  if(pointInPolygon(terrain[0], view)) {
-  points[i++] = [terrain[0][0], 0, terrain[0][1]];
-  }
-  
-  if(pointInPolygon(terrain[1], view)) {
-  points[i++] = [terrain[1][0], 0, terrain[1][1]];
-  }
-  
-  if(pointInPolygon(terrain[2], view)) {
-  points[i++] = [terrain[2][0], 0, terrain[2][1]];
-  }
-  
-  if(pointInPolygon(terrain[3], view)) {
-  points[i++] = [terrain[3][0], 0, terrain[3][1]];
-  }
-  
-  
-  
-  this.viewBox = [];
-  var size = points.length;
-
-  var v = 0;
-
-  // For each point in the lower plane(y=0), add one in the upper plane(y=h)
-  for(var j = 0; j < size; j++) {
-  
-  this.viewBox[6*v + 0] = points[j][0];
-  this.viewBox[6*v + 1] = 0;
-  this.viewBox[6*v + 2] = points[j][2];
-  
-  this.viewBox[6*v + 3] = points[j][0];
-  this.viewBox[6*v + 4] = h;     
-  this.viewBox[6*v + 5] = points[j][2];
-  
-
-  v++;
-  
-  points[i++] = [points[j][0], h, points[j][2]];       
-  }
-  
-
-  
-  var points = [];
-  points[0] = [ntl[0], ntl[1], ntl[2]];
-  points[1] = [ntr[0], ntr[1], ntr[2]];
-  points[2] = [nbr[0], nbr[1], nbr[2]];
-  points[3] = [nbl[0], nbl[1], nbl[2]];
-  points[4] = [ftl[0], 0.0, ftl[2]];
-  points[5] = [ftr[0], 0.0, ftr[2]];
-  points[6] = [fbr[0], 0.0, fbr[2]];
-  points[7] = [fbl[0], 0.0, fbl[2]];
-  
-  this.viewBoxSize = this.viewBox/2;
-  
-  return points;
-  }
-*/
 
 /**
  *   Return 8 points delimiting the current view frustum (this is used for the shadow map)
@@ -940,7 +535,7 @@ Engine.prototype.updateCascadeShadowMaps = function(cascadeIndex) {
     
     // 1. Determine how to split the frustum
     // 
-    //    For now, this is done manually
+    // For now, this is done manually
     // TODO: find those values automatically based on map.sizeInMeters
     var splits = [50.0, 200.0, 600.0, 3000.0];
 
@@ -975,19 +570,6 @@ Engine.prototype.updateCascadeShadowMaps = function(cascadeIndex) {
     // Create the view frustum
     var points = this.viewFrustumUnaltered(farDist);
     
-    // Calculate a fast approximation of a bounding sphere
-    /*var viewFrustum = new THREE.Geometry();
-      
-      for ( var i = 0; i < points.length; i += 1 ) {
-      viewFrustum.vertices.push( new THREE.Vector3( points[i][0], points[i][1], points[i][2] ) );
-      }
-      
-      viewFrustum.computeBoundingSphere();
-      
-      var center = viewFrustum.boundingSphere.center.toArray();
-      var radius = Math.round(viewFrustum.boundingSphere.radius);
-    */
-    
     var center = vec3.create([0.0, 0.0, 0.0]); 
     var j;
 
@@ -1011,8 +593,6 @@ Engine.prototype.updateCascadeShadowMaps = function(cascadeIndex) {
     for ( j in points ) {
         radius = Math.max( vec3.length( vec3.subtract( points[j], center, [] ) ), radius );
     }
-    
-    //var radius = farDist*2.0;
     
     // Calculate position of the light for this current frustum split (center + (direction*farDist))
     var ExtraBackup = 0.0;//20.0;
@@ -1066,201 +646,12 @@ Engine.prototype.updateLight = function() {
     this.lightDirection[0] = Math.cos(this.lightYawn) * Math.cos(this.lightPitch);
     this.lightDirection[1] = Math.sin(this.lightPitch);
     this.lightDirection[2] = Math.sin(this.lightYawn) * Math.cos(this.lightPitch);
-    
-    //this.updateCascadeShadowMaps(cascadeMap);
-    
-    // 1. Find bounding box 8 points in world space from view frustum    
-    //var farDistance = 200;
-    
-    //var points = this.viewFrustumUnaltered(farDistance);
-    
-    /* var points = [];
-       points[0] = [0.0,       0.0,    0.0];
-       points[1] = [mapSize,   0.0,    0.0];
-       points[2] = [mapSize,   0.0,    mapSize];
-       points[3] = [0.0,       0.0,    mapSize];
-       points[4] = [0.0,       h,      0.0];
-       points[5] = [mapSize,   h,      0.0];
-       points[6] = [mapSize,   h,      mapSize];
-       points[7] = [0.0,       h,      mapSize];*/
-    
-    // Create Bounding Sphere
-    /*
-      var viewFrustum = new THREE.Geometry();
-      
-      for(i = 0; i < points.length; i+=1) {
-      viewFrustum.vertices.push(new THREE.Vector3(points[i][0], points[i][1], points[i][2]));
-      }
-      
-      viewFrustum.computeBoundingSphere();
-      
-      var center = viewFrustum.boundingSphere.center.toArray();
-      var radius = Math.round(viewFrustum.boundingSphere.radius);
-    */
-    /*
-    // 2. Find center of the box
-    var center = vec3.create([0.0, 0.0, 0.0]);
-    var size = points.length;
-    
-    for(i = 0; i < size; i++) {
-    vec3.add(center, points[i]);
-    }
-    vec3.scale(center, 1.0/size);
-    
-    var radius = farDistance/2.0;
-    
-    //var distanceFromCenter = vec3.length(vec3.subtract(center, p, []));
-    
-    var ExtraBackup = 20.0;
-    var NearClip = 1.0;
 
-    var backupDist = ExtraBackup + NearClip + radius;
-    var shadowCamPos = [];
-    shadowCamPos[0] = center[0] + (this.lightDirection[0] * backupDist);
-    shadowCamPos[1] = center[1] + (this.lightDirection[1] * backupDist);
-    shadowCamPos[2] = center[2] + (this.lightDirection[2] * backupDist);
-
-    
-    var bounds = radius;
-    var farClip = backupDist + radius;
-    
-    this.lightFarPlane = farClip;
-    this.lightNearPlane = NearClip - 300;
-    
-    mat4.lookAt(shadowCamPos, center, [0.0, 1.0, 0.0], this.lightMVMatrix);
-    mat4.ortho(-bounds, bounds, -bounds, bounds, this.lightNearPlane, this.lightFarPlane, this.lightPMatrix);
-    
-    this.lightMVMatrix[12] *= 512*0.5*this.lightPMatrix[0];
-    this.lightMVMatrix[12] = Math.floor(this.lightMVMatrix[12]);
-    this.lightMVMatrix[12] /= 512*0.5*this.lightPMatrix[0];
-    
-    this.lightMVMatrix[13] *= 512*0.5*this.lightPMatrix[5];
-    this.lightMVMatrix[13] = Math.floor(this.lightMVMatrix[13]);
-    this.lightMVMatrix[13] /= 512*0.5*this.lightPMatrix[5];
-    
-    
-    //mat4.multiply(this.lightPMatrix, this.lightMVMatrix, this.uLightPMVMatrix);
-    */
-    /*
-      mat4.multiply(this.lightPMatrix, this.lightMVMatrix, this.uLightPMVMatrix);
-      
-
-      
-      this.uLightPMVMatrix[12] *= 512*0.5;
-      this.uLightPMVMatrix[12] = Math.floor(this.uLightPMVMatrix[12]);
-      this.uLightPMVMatrix[12] /= 512*0.5;
-      
-      this.uLightPMVMatrix[13] *= 512*0.5;
-      this.uLightPMVMatrix[13] = Math.floor(this.uLightPMVMatrix[13]);
-      this.uLightPMVMatrix[13] /= 512*0.5;
-      console.log(this.uLightPMVMatrix[12]);
-    */
-    /*
-      this.uLightPMVMatrix[14] /= ((1/512)*2.0);
-      this.uLightPMVMatrix[14] = Math.floor(this.uLightPMVMatrix[14]);
-      this.uLightPMVMatrix[14] *= ((1/512)*2.0);
-    */
-    //console.log(this.uLightPMVMatrix[12]);
-    //mat4.multiply(this.lightPMatrix, roundMatrix);
-    //mat4.translate(this.lightMVMatrix, [-dX, -dZ, 0]);
-    //mat4.translate(this.lightPMatrix, [-dX, -dZ, 0]);
-    
-    /*float ShadowMapSize = 1024.0f; // Set this to the size of your shadow map
-      Vector3 shadowOrigin = Vector3.Transform(Vector3.Zero, shadowMatrix);
-      shadowOrigin *= (ShadowMapSize / 2.0f);
-      Vector2 roundedOrigin = Vector2(Math.Round(shadowOrigin .x), Math.Round(shadowOrigin .y));
-      Vector2 rounding = roundedOrigin - shadowOrigin;
-      rounding /= (ShadowMapSize / 2.0f);
-
-      Matrix roundMatrix = Matrix.CreateTranslation(rounding.x, rounding.y, 0.0f);
-      shadowMatrix *= roundMatrix;*/
-    
-    /*
-      var points = this.viewFrustum();
-      var size = points.length;
-      
-      // 2. Find center of the box
-      var center = vec3.create([0.0, 0.0, 0.0]);
-      for(var i = 0; i < size; i++) {
-      vec3.add(center, points[i]);
-      }
-      vec3.scale(center, 1.0/size);
-
-      
-      // 3. Update the light modelview matrix. (look at center from the direction of the light)
-      var tmpSunPosition = vec3.create(this.lightDirection);
-      vec3.scale(tmpSunPosition, sunDistance);
-      vec3.add(tmpSunPosition, center);
-      mat4.lookAt(tmpSunPosition, center, [0.0, 1.0, 0.0], this.lightMVMatrix);
-      //console.log(this.lightMVMatrix);
-      
-      // 4. Convert the bounding box into light space (multiply each point by lightMVMatrix)    
-      for(var i = 0; i < size; i++) {
-      mat4.multiplyVec3(this.lightMVMatrix, points[i]);
-      }
-      
-      // 5. Find the Min and Max X, Y, and Z.  
-      var min = vec3.create(points[0]);
-      var max = vec3.create(points[0]);
-      
-      for(var i = 0; i < size; i++) {
-      
-      if(points[i][0] < min[0])
-      min[0] = points[i][0];
-      else if(points[i][0] > max[0])
-      max[0] = points[i][0];
-      
-      if(points[i][1] < min[1])
-      min[1] = points[i][1];
-      else if(points[i][1] > max[1])
-      max[1] = points[i][1];        
-      
-      if(points[i][2] < min[2])
-      min[2] = points[i][2];
-      else if(points[i][2] > max[2])
-      max[2] = points[i][2];
-      
-      }
-      
-      this.lightFarPlane = -min[2];
-      this.lightNearPlane = -max[2];
-      
-      // 6. Update orthogonal projection matrix for the sun
-      //mat4.ortho(min[0], max[0], min[1], max[1], this.lightNearPlane, this.lightFarPlane, this.lightPMatrix);
-
-      delta++;
-      var t = Math.floor(delta);
-      var test = 250.0;
-      var test2 = 550.0;
-      
-      var d = (test+test2)/512;
-
-      console.log(d);
-      console.log(test+test2);
-      console.log(min[0]);
-      
-      min[0] /= d/2;
-      min[0] = Math.floor(min[0]);
-      min[0] *= d/2;
-      
-      max[0] /= d/2;
-      max[0] = Math.floor(max[0]);
-      max[0] *= d/2;
-      
-      mat4.ortho(-test+(t*d), test2+(t*d), -test, test, this.lightNearPlane, this.lightFarPlane, this.lightPMatrix);
-      
-      this.lightMVMatrix[12] *= 512*0.5*this.lightPMatrix[0];
-      this.lightMVMatrix[12] = Math.floor(this.lightMVMatrix[12]);
-      this.lightMVMatrix[12] /= 512*0.5*this.lightPMatrix[0];
-      
-      this.lightMVMatrix[13] *= 512*0.5*this.lightPMatrix[5];
-      this.lightMVMatrix[13] = Math.floor(this.lightMVMatrix[13]);
-      this.lightMVMatrix[13] /= 512*0.5*this.lightPMatrix[5];
-    */
 };
 
 /**
  *   Compute and send to the shader the necessary values for sky (and water) rendering
+ *   credits to Conor Dickinson for this.
  *   @param {shaderProgram} shader program where to send the values   
  */
 Engine.prototype.setSkyParamUniforms = function(prog) {
@@ -1410,9 +801,7 @@ Engine.prototype.renderFrustum = function(points) {
     gl.vertexAttribPointer(prog.aVertexPosition, 3, gl.FLOAT, false, 0, 0);
     
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer);
-    // console.log(points.length);
     gl.drawElements(gl.LINES, points.length/3, gl.UNSIGNED_SHORT, 0);
-    // gl.drawArrays(gl.LINE_STRIP, 0, 8);
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
     gl.disableVertexAttribArray(prog.aVertexPosition);
@@ -1707,74 +1096,9 @@ Engine.prototype.drawDepthMapCascadeCPU = function(fbo, split_id) {
 };
 
 
-
 /**
- *   Create depth map of terrain from light POV
- */
-Engine.prototype.drawDepthMap = function(fbo, cascadeIndex) {
-    
-    'use strict';
-    
-    var gl = this.gl;
-    
-    if(fbo !== null) {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo.framebuffer);
-    }
-    else {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    }
-    
-    // Setup
-    gl.viewport(0, 0, this.depthMapSize.w, this.depthMapSize.h);
-    gl.clearColor(1.0, 1.0, 1.0, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    // gl.enable(gl.CULL_FACE);
-    // gl.cullFace(gl.FRONT);
-    gl.enable(gl.DEPTH_TEST);
-    
-    // Light POV
-    mat4.set(this.cascadeLights[cascadeIndex].mvMatrix, this.mvMatrix);
-    mat4.set(this.cascadeLights[cascadeIndex].pMatrix, this.pMatrix);
-    
-    // Render Terrain
-    var prog = this.shaderPrograms['terrain'];
-    gl.useProgram(prog);
-    
-    gl.enableVertexAttribArray(prog.aVertexPosition);
-    
-    this.setMatrixUniforms(prog);
-    //this.setMatrixUniformsLight(prog);
-    
-    gl.uniform1f(prog.uMode, 2);
-    gl.uniform1f(prog.uFarPlane, this.cascadeLights[cascadeIndex].lightFarPlane);
-    gl.uniform1f(prog.uNearPlane, this.cascadeLights[cascadeIndex].lightNearPlane);
-    
-    var i = 0;
-    while(this.map.buffers['chunk'+i] !== undefined) {
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.map.buffers['chunk'+i]['position']);
-        gl.vertexAttribPointer(prog.aVertexPosition, this.map.buffers['chunk'+i]['position'].itemSize, gl.FLOAT, false, 0, 0);
-        
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.map.buffers['chunk'+i]['indexes']);
-        
-        if(this.ext['uintElementIndex']) {
-            gl.drawElements(gl.TRIANGLES, this.map.buffers['chunk'+i]['indexes'].numItems, gl.UNSIGNED_INT, 0);
-        }
-        else {
-            gl.drawElements(gl.TRIANGLES, this.map.buffers['chunk'+i]['indexes'].numItems, gl.UNSIGNED_SHORT, 0);
-        }
-        
-        i+=1;
-    }
-    
-    gl.disableVertexAttribArray(prog.aVertexPosition);
-    
-    gl.disable(gl.CULL_FACE);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null); 
-};
-
-
-/**
- * 
+ * Render each side of the sky to the cube map
+ * For efficiency purpose, this is only done when the light change
  */
 Engine.prototype.updateSkyCube = function(fbo) {
 
@@ -1802,6 +1126,8 @@ Engine.prototype.updateSkyCube = function(fbo) {
 }
 
 /**
+ * First rendering pass 
+ *
  * Draws :
  *   - Terrain
  *   - Objects
@@ -1886,13 +1212,11 @@ Engine.prototype.pass1 = function(fbo) {
 var previousT = (new Date()).getTime();
 
 /**
- *   Pass2
+ * Second rendering pass
  *   
  * Render :
  *   - Water
  *   - Sky
- *   @param {framebuffer object} rendering target
- *   @param {framebuffer object} scene, result from pass1
  */
 Engine.prototype.pass2 = function(from, to) {
     
@@ -1911,7 +1235,7 @@ Engine.prototype.pass2 = function(from, to) {
     
     // 1. Sky		
     gl.disable(gl.DEPTH_TEST);
-    //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 
     mat4.identity(this.mvMatrix);
@@ -2027,7 +1351,7 @@ Engine.prototype.pass2 = function(from, to) {
 };
 
 /**
- *   Render scene picking (to click on objetcs)
+ *   Render scene picking (to click on objects)
  */
 Engine.prototype.renderScenePicking = function(to) {
 
@@ -2763,14 +2087,7 @@ Engine.prototype.initAllFramebuffers = function() {
     this.fbo['terrainDepth3'] = this.createFramebufferDepth(this.depthMapSize.w, this.depthMapSize.h, gl.FLOAT);
 
     var sizeSkyCube = [256, 256];
-    /*
-      this.fbo['skyCubeyp'] = this.createFramebuffer( sizeSkyCube[0], sizeSkyCube[1] );
-      this.fbo['skyCubeyn'] = this.createFramebuffer( sizeSkyCube[0], sizeSkyCube[1] );
-      this.fbo['skyCubexp'] = this.createFramebuffer( sizeSkyCube[0], sizeSkyCube[1] );
-      this.fbo['skyCubexn'] = this.createFramebuffer( sizeSkyCube[0], sizeSkyCube[1] );
-      this.fbo['skyCubezp'] = this.createFramebuffer( sizeSkyCube[0], sizeSkyCube[1] );
-      this.fbo['skyCubezn'] = this.createFramebuffer( sizeSkyCube[0], sizeSkyCube[1] );
-    */
+
     this.fbo['skyCubeMap'] = this.createCubeMap( sizeSkyCube[0], sizeSkyCube[1] );
 
     //this.fbo['unitsDepth'] =        this.createFramebufferDepth(this.depthMapSize.w, this.depthMapSize.h);

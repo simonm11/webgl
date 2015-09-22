@@ -2,7 +2,7 @@
 
 <head>
 <title>test</title>
-<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
 <script type="text/javascript" src="libs/glMatrix-0.9.5.min.js"></script>
 <script type="text/javascript" src="libs/jquery-1.11.1.min.js"></script>
 
@@ -30,32 +30,31 @@
 
 <script type="text/javascript">
 
-  var ee;
+    var tmp_engine;
   
-  function webGLStart() {
-  
-  // Init canvas
-        try {
-            var canvas = $('#webgl-canvas')[0];
-            var gl = canvas.getContext("experimental-webgl", { antialias:false });
+    function webGLStart() {
+
+    try {
+        var canvas = $('#webgl-canvas')[0];
+        var gl = canvas.getContext("experimental-webgl", { antialias:false });
             
-            canvas.width = canvas.clientWidth;
-            canvas.height = canvas.clientHeight;
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
 
-            gl.viewportWidth = canvas.width;
-            gl.viewportHeight = canvas.height;
+        gl.viewportWidth = canvas.width;
+        gl.viewportHeight = canvas.height;
         
-        } catch (e) {
-            console.log(e);
-        }    
+    } catch (e) {
+        console.log(e);
+    }    
         
-        if (!gl) {
-            alert("Erreur init webgl");
-        }
+    if (!gl) {
+        alert("Erreur init webgl");
+    }
 
-        ee = new Engine(gl);
-        ee.init();
-        ee.start();
+    tmp_engine = new Engine(gl);
+    tmp_engine.init();
+    tmp_engine.start();
             
         
     }
@@ -68,58 +67,58 @@
 
 <body onload="webGLStart();" style="margin: 0;">
 
-    <canvas id="webgl-canvas" style="border: none; width: 100%; height: 100%;"></canvas>
+  <canvas id="webgl-canvas" style="border: none; width: 100%; height: 100%;"></canvas>
+  
+  <div id="sky_box_param">
     
-    <div id="sky_box_param">
-	
-		<div >
-			<div class="slider-label tt">Pitch: <span id="label-pitch"></span><span id="pos"></span></div>	
-			<div class="slider-sky" id="pitch"></div>
-		</div>
-		
-		<div >
-			<div class="slider-label tt">Raw: <span id="label-yawn"></span></div>	
-			<div class="slider-sky" id="yawn"></div>
-		</div>
+    <div >
+      <div class="slider-label tt">Pitch: <span id="label-pitch"></span><span id="pos"></span></div>	
+      <div class="slider-sky" id="pitch"></div>
+    </div>
+    
+    <div >
+      <div class="slider-label tt">Raw: <span id="label-yawn"></span></div>	
+      <div class="slider-sky" id="yawn"></div>
+    </div>
 
-		<div >
-			<div class="slider-label tt">Sky Clarity : <span id="label-clarity"></span></div>	
-			<div class="slider-sky" id="clarity"></div>
-		</div>
-	
-		<div >
-			<div class="slider-label tt">Pollution : <span id="label-pollution"></span></div>	
-			<div class="slider-sky" id="pollution"></div>
-		</div>
-		
-		<div >
-			<div class="slider-label tt">Density : <span id="label-density"></span></div>	
-			<div class="slider-sky" id="density"></div>
-		</div>
-		<div >
-			<div class="slider-label tt">Planet Scale : <span id="label-planet-scale"></span></div>	
-			<div class="slider-sky" id="planet-scale"></div>
-		</div>
-		<div >
-			<div class="slider-label tt">Atmosphere Scale : <span id="label-atmosphere-scale"></span></div>	
-			<div class="slider-sky" id="atmosphere-scale"></div>
-		</div>
-		<div >
-			<div class="slider-label tt">Sun disk radius : <span id="label-disk-radius"></span></div>	
-			<div class="slider-sky" id="disk-radius"></div>
-		</div>
-		<div>
-			<div class="slider-label tt">Birhgtness : <span id="label-brightness"></span></div>	
-			<div class="slider-sky" id="brightness"></div>
-		</div>
-		<div>
-			<div class="slider-label tt">Sun disk intensity : <span id="label-disk-intensity"></span></div>	
-			<div class="slider-sky" id="disk-intensity"></div>
-		</div>		
-	</div>
+    <div >
+      <div class="slider-label tt">Sky Clarity : <span id="label-clarity"></span></div>	
+      <div class="slider-sky" id="clarity"></div>
+    </div>
     
-    <div id="frame">
-	</div>
+    <div >
+      <div class="slider-label tt">Pollution : <span id="label-pollution"></span></div>	
+      <div class="slider-sky" id="pollution"></div>
+    </div>
+    
+    <div >
+      <div class="slider-label tt">Density : <span id="label-density"></span></div>	
+      <div class="slider-sky" id="density"></div>
+    </div>
+    <div >
+      <div class="slider-label tt">Planet Scale : <span id="label-planet-scale"></span></div>	
+      <div class="slider-sky" id="planet-scale"></div>
+    </div>
+    <div >
+      <div class="slider-label tt">Atmosphere Scale : <span id="label-atmosphere-scale"></span></div>	
+      <div class="slider-sky" id="atmosphere-scale"></div>
+    </div>
+    <div >
+      <div class="slider-label tt">Sun disk radius : <span id="label-disk-radius"></span></div>	
+      <div class="slider-sky" id="disk-radius"></div>
+    </div>
+    <div>
+      <div class="slider-label tt">Birhgtness : <span id="label-brightness"></span></div>	
+      <div class="slider-sky" id="brightness"></div>
+    </div>
+    <div>
+      <div class="slider-label tt">Sun disk intensity : <span id="label-disk-intensity"></span></div>	
+      <div class="slider-sky" id="disk-intensity"></div>
+    </div>		
+  </div>
+  
+  <div id="frame">
+  </div>
     
     <style>
     #frame {
@@ -159,11 +158,11 @@
     }
 
     </style>
-  
-	<script>
+    
+    <script>
 
-	</script>
-	
+    </script>
+    
 </body>
 
 </html>

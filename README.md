@@ -6,10 +6,10 @@ Since I simply cared about learning about OpenGL/WebGL, I didn't use any existin
 
 Here is what I managed to implement (I'll go in details about each a bit down, if anyone is interested) :
 
-* [Terrain](#terrain) : Draw a terrain mesh using a height map.
+* [Terrain](#terrain) : Draw a terrain mesh using a height map + number of levels of details configurable.
 * [Textures](#textures) : Bump Mapping + realistic textures blending.
 * [Shadows](#shadows) : Shadows using Cascaded Variance Shadow Map.
-* [Sky](#sky) : Procedurally Generated
+* [Sky](#sky) : Sky procedurally generated
 * [Water](#water) : refraction + sky reflection
 * [objects](#objects) : Scene picking + Colision
 

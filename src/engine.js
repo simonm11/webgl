@@ -88,6 +88,9 @@ var Engine = function (gl) {
     // size of each depthMap used for shadows
     this.depthMapSize = {h: 0.0, w: 0.0};
 
+    // shadows enabled (set up in gui.js)
+    this.shadowsEnable = true;
+
     // initialisation of camera variables (could create a Camera class later)
     this.cameraPos = vec3.create();
     this.cameraPitch = -18;
@@ -238,6 +241,7 @@ Engine.prototype.start = function() {
     this.map = new Map(this);
 
     this.map.downloadHeightMap("heightmaps/terrain5.raw", 16).then(function(){
+    //this.map.downloadHeightMap("heightmaps/mt-taranaki.raw", 16).then(function() {
     //this.map.downloadHeightMap("heightmaps/terrain0-16bbp-257x257.raw", 16).then(function(){
 
         var now, tmp;
@@ -533,12 +537,13 @@ Engine.prototype.updateCascadeShadowMaps = function(cascadeIndex) {
 
     'use strict';
     
-    // 1. Determine how to split the frustum
+    // 1. Determine how to split the frustum (how far the camera is for each split)
     // 
-    // For now, this is done manually
-    // TODO: find those values automatically based on map.sizeInMeters
-    var splits = [50.0, 200.0, 600.0, 3000.0];
-
+    // power of 0.6 is used so that the camera distance doesn't increase too much when the size
+    // of the map increase (a normal 0.5 wasn't enough)
+    var v = Math.pow(this.map.sizeInUnits, 0.6);
+    var splits = [0.6 * v, 2.0 * v, 6.0 * v, 12.0 * v];
+  
     //
     // 2. For each interval, create a view frustum
     //
@@ -605,9 +610,11 @@ Engine.prototype.updateCascadeShadowMaps = function(cascadeIndex) {
     shadowCamPos[1] = center[1] + (this.lightDirection[1] * backupDist);
     shadowCamPos[2] = center[2] + (this.lightDirection[2] * backupDist);
 
+    var multiplier = this.map.heightScale;
+    
     // Current near and far clip for the light
-    var near = -500.0;
-    var far = radius*2.0 + 400.0;
+    var near = -2.0 * multiplier;
+    var far = radius * 2.0 + (2.0 * multiplier);
     
     // Model view matrix
     mat4.lookAt(shadowCamPos, center, [0.0, 1.0, 0.0], this.cascadeLights[cascadeIndex].mvMatrix);
@@ -1168,12 +1175,27 @@ Engine.prototype.pass1 = function(fbo) {
     var prog;
     
     if ( this.map.renderingMode == 'cpu') {
-	
-	prog = this.shaderPrograms['terrain'];
 
+	if ( this.shadowsEnable ) {
+	
+	    prog = this.shaderPrograms['terrain'];
+
+	} else {
+
+	    //
+	    
+	}
     } else {
 
-	prog = this.shaderPrograms['terrainGPU'];
+	if ( this.shadowsEnable ) {
+	
+	    prog = this.shaderPrograms['terrainGPU'];
+
+	} else {
+
+	    prog = this.shaderPrograms['terrainGPUNOS'];
+	    
+	}
 
     }
 
@@ -1184,16 +1206,21 @@ Engine.prototype.pass1 = function(fbo) {
     gl.uniform3f(prog.uDirectionalColor, 1.0, 1.0, 1.0);
     
     this.setMatrixUniforms(prog);
-    
-    this.setMatrixUniformsLight(prog, 0);
-    this.setMatrixUniformsLight(prog, 1);
-    this.setMatrixUniformsLight(prog, 2);
-    this.setMatrixUniformsLight(prog, 3);
+
+    if ( this.shadowsEnable ) {    
+	this.setMatrixUniformsLight(prog, 0);
+	this.setMatrixUniformsLight(prog, 1);
+	this.setMatrixUniformsLight(prog, 2);
+	this.setMatrixUniformsLight(prog, 3);
+    }
     
     gl.uniform1f(prog.uMode, 1);
     gl.uniform3fv(prog.uEyesPosition, this.cameraPos);
     gl.uniform1f(prog.uHeightScale, this.map.heightScale);
-    gl.uniform2f(prog.uDepthMapSize, this.depthMapSize.h, this.depthMapSize.w);
+    
+    if ( this.shadowsEnable ) {
+	gl.uniform2f(prog.uDepthMapSize, this.depthMapSize.h, this.depthMapSize.w);
+    }
     
     this.map.render(prog);
     
@@ -1520,40 +1547,45 @@ Engine.prototype.renderTick = function(currentFrame) {
     // Start FPS tracker
     this.gui.stats.begin();
 
-    // Frame interval to updates shadow maps
-    // for example, [4, 4, 8, 8] means that the shadow map 0 & 1 will be updated every 4 frames
-    var updateShadowTiming = [4, 4, 8, 8];
+    // Drawing the shadow maps
+    if (this.shadowsEnable) {
     
-    // If the camera has been updated
-    // No point re-rendering the shadow map if the camera hasn't moved (unless the sun moved..)
-    if ( this.cameraLastUpdate > this.shadowMapsLastUpdate ) {
+	// Frame interval to updates shadow maps
+	// for example, [4, 4, 8, 8] means that the shadow map 0 & 1 will be updated every 4 frames
+	var updateShadowTiming = [4, 4, 8, 8];
 	
-        // Circle through the shadow maps
-        for ( i = 0; i < this.nbCascadeSplit; i++ ) {
+	// If the camera has been updated
+	// No point re-rendering the shadow map if the camera hasn't moved (unless the sun moved..)
+	if ( this.cameraLastUpdate > this.shadowMapsLastUpdate ) {
+	    
+            // Circle through the shadow maps
+            for ( i = 0; i < this.nbCascadeSplit; i++ ) {
 
-            // re-render shadow map every x frames, x being updateShadowTiming[i] defined abone
-            if ( (currentFrame + i) % updateShadowTiming[i] === 0 || currentFrame === 0 ) {
+		// re-render shadow map every x frames, x being updateShadowTiming[i] defined abone
+		if ( (currentFrame + i) % updateShadowTiming[i] === 0 || currentFrame === 0 ) {
 
-                // temporary framebuffer used to do some post-processing on the shadow map (blur etc..)
-                var tmpFBO = this.fbo['tmp' + i];
+                    // temporary framebuffer used to do some post-processing on the shadow map (blur etc..)
+                    var tmpFBO = this.fbo['tmp' + i];
 
-                // final framebuffer
-                var shadowMapFBO = this.fbo['terrainDepth' + i];
+                    // final framebuffer
+                    var shadowMapFBO = this.fbo['terrainDepth' + i];
 
-                // Update the light for this split
-                this.updateCascadeShadowMaps(i);
+                    // Update the light for this split
+                    this.updateCascadeShadowMaps(i);
 
-                // Render the shadow map
-                this.drawDepthMapCascade( shadowMapFBO, i );
+                    // Render the shadow map
+                    this.drawDepthMapCascade( shadowMapFBO, i );
 
-                // Blur the shadow map
-                this.blur( shadowMapFBO, tmpFBO, 1, this.depthMapSize.w, this.depthMapSize.h );
-                this.blur( tmpFBO, shadowMapFBO, 0, this.depthMapSize.w, this.depthMapSize.h );
-                
+                    // Blur the shadow map
+                    this.blur( shadowMapFBO, tmpFBO, 1, this.depthMapSize.w, this.depthMapSize.h );
+                    this.blur( tmpFBO, shadowMapFBO, 0, this.depthMapSize.w, this.depthMapSize.h );
+                    
+		}
             }
-        }
 
-        this.shadowMapsLastUpdate = new Date().getTime();
+            this.shadowMapsLastUpdate = new Date().getTime();
+	}
+	
     }
     
     var camerasPitch = [0, 0, 90 + 180, 90, 0,  0];
@@ -1585,8 +1617,10 @@ Engine.prototype.renderTick = function(currentFrame) {
 
     //this.renderScenePicking( null );
 
-    this.downSample( this.fbo['terrainDepth0'], null, canvas.width * 0.75, 0, canvas.width * 0.25, canvas.width * 0.25 );
-    //this.downSample( this.fbo['scenePicking'], null, canvas.width * 0.75, 0, canvas.width * 0.25, canvas.width * 0.25 );
+    this.downSample( this.fbo['terrainDepth0'], null, canvas.width * 0.90, 0, canvas.width * 0.10, canvas.width * 0.10 );
+    this.downSample( this.fbo['terrainDepth1'], null, canvas.width * 0.79, 0, canvas.width * 0.10, canvas.width * 0.10 );
+    this.downSample( this.fbo['terrainDepth2'], null, canvas.width * 0.68, 0, canvas.width * 0.10, canvas.width * 0.10 );
+    this.downSample( this.fbo['terrainDepth3'], null, canvas.width * 0.57, 0, canvas.width * 0.10, canvas.width * 0.10 );
     
     //this.downSample( {texture: this.map.heightMapT}, null, canvas.width * 0.75, 0, canvas.width * 0.25, canvas.width * 0.25 );
     
@@ -1828,7 +1862,10 @@ Engine.prototype.initShaders = function(loadTotal) {
         def['terrainGPU'][1].push("cParams[" + j + "].farPlane");
     }
 
-    console.log(def['terrainGPU'][1]);
+    def['terrainGPUNOS'] = [];
+
+    def['terrainGPUNOS'][0] = ['aVertexPosition'];
+    def['terrainGPUNOS'][1] = ['uTranslation', 'uPMatrix', 'uMVMatrix', 'uHeightMap', 'uMode', 'uUVScale', 'uNoise', 'uHeightScale', 'uMapSize', 'uDirectionalColor', 'uAmbientColor', 'uLightingDirection', 'uSamplerSand', 'uSamplerSandNormal', 'uSamplerSand2', 'uSamplerSand2Normal', 'uSamplerDirt', 'uSamplerDirtNormal', 'uSamplerRock', 'uSamplerRockNormal', 'uWaterLevel'];
 
     def['terrain'] = [];
     

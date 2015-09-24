@@ -122,7 +122,7 @@ Mouse.prototype.down = function(e) {
     
     // Left Click
     if ( e.button == 0 ) {
-	
+
         clickDown = true;
 	
         if ( this.engine.colorMap[index] != 0 ) {
@@ -247,7 +247,11 @@ Keyboard.prototype.handleKeyDown = function(event) {
     this.currentlyPressedKeys[event.keyCode] = true;
     
     if(event.keyCode == 71) {
-	if(this.engine.gui.skyOptions == 0) {
+
+	this.engine.gui.toggleDisplay();
+
+	/*
+	if (this.engine.gui.skyOptions == 0) {
 	    this.engine.gui.skyOptions = 1;
 	    $('#sky_box_param').css({
 		'top':'20px'
@@ -259,6 +263,7 @@ Keyboard.prototype.handleKeyDown = function(event) {
 		'top':'-2000px'
 	    });
 	}
+	*/
     } else if(event.keyCode == 72) {
         this.engine.updateLight();
 	//	myTerrain.generateNormals();

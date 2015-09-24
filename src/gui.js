@@ -7,7 +7,7 @@ var Gui = function(_engine) {
     this.engine = _engine;
     this.state = 'undefined';
     this.types = [];
-    this.skyOptions = 0;
+    this.show = 0;
     this.stats = undefined;
 
 }
@@ -131,6 +131,21 @@ Gui.prototype.startGame = function() {
         slide: function(){that.refreshSkyParams();},
         change: function(){that.refreshSkyParams();}
     });
+
+    // Shadow checkbox
+    $('#enableShadows').change(function() {
+
+	if($(this).is(":checked")) {
+	    that.engine.shadowsEnable = true;
+	} else {
+	    that.engine.shadowsEnable = false;
+	}
+    });
+
+    // show / hide gui event
+    $('#show-gui').on('click', function() {
+        that.toggleDisplay();
+    });
     
     $(".slider-sky .ui-slider-handle").unbind('keydown');
     
@@ -175,12 +190,13 @@ Gui.prototype.startGame = function() {
     $("#disk-intensity" ).slider( "value", Math.sqrt(0.5*pres));
     $("#disk-intensity" ).slider( "option", "min", 0);
     $("#disk-intensity" ).slider( "option", "max", Math.sqrt(1*pres));
-    
+    /*
     $('#sky_box_param').css({
         'position':'fixed',
         'top':'-2000px',
         'left':'20px'
     });
+    */
 }
 
 Gui.prototype.refreshSkyParams = function() {
@@ -205,5 +221,21 @@ Gui.prototype.refreshSkyParams = function() {
     
     this.engine.updateLight();
 };
+
+Gui.prototype.toggleDisplay = function() {
+
+    if (this.show == 0) {
+
+	this.show = 1;
+
+	$('#gui').css({'display':'block'});
+	
+    } else {
+
+	this.show = 0;
+
+	$('#gui').css({'display':'none'});
+    }
+}
 
 

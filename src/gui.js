@@ -125,7 +125,7 @@ Gui.prototype.startGame = function() {
         'right':'150px'});
     
     // Setup the sliders for the sky params
-    $( "#pitch, #yawn, #pollution, #clarity, #density, #planet-scale, #atmosphere-scale, #disk-radius, #brightness, #disk-intensity" ).slider({
+    $( "#pitch, #yawn, #pollution, #clarity, #density, #planet-scale, #atmosphere-scale, #disk-radius, #brightness, #disk-intensity, #snow-level" ).slider({
         orientation: "horizontal",
         range: "min",
         slide: function(){that.refreshSkyParams();},
@@ -148,8 +148,12 @@ Gui.prototype.startGame = function() {
     });
     
     $(".slider-sky .ui-slider-handle").unbind('keydown');
-    
+
     var pres = 1000;
+
+    $("#snow-level" ).slider( "option", "min", 0.0);
+    $("#snow-level" ).slider( "option", "max", 100.0);
+    $("#snow-level" ).slider( "value", 0.0);
     
     $("#pitch" ).slider( "value", 35.0);
     $("#pitch" ).slider( "option", "min", 0);
@@ -202,6 +206,8 @@ Gui.prototype.startGame = function() {
 Gui.prototype.refreshSkyParams = function() {
 
     var pres = 1000;
+
+    $("#label-snow-level").text($("#snow-level").slider( "value" ));
     
     $("#label-pitch").text($("#pitch").slider( "value" ));
     $("#label-yawn").text($("#yawn").slider( "value" ));

@@ -39,7 +39,7 @@ Grid.prototype.initMesh = function(width, height, blockSizeW, blockSizeH, ratio,
     
     // Alocate buffer array
     this.positionBuffer = new Float32Array(width * height * 3);
-    
+
     var j, i, indexPosition = 0;
     
     for ( j = 0; j < height; ++j ) {

@@ -33,7 +33,7 @@ var Engine = function (gl) {
 
     // current state of the program (stopped, paused etc..)
     this.state = states.STOPPED_0;
-
+    
     // array of reference to opengl extensions in use
     this.ext = undefined;
 
@@ -57,7 +57,7 @@ var Engine = function (gl) {
 
     // array of players (a player is defined in player.js)
     this.players = [];
-
+   
     // reference to the 'main' player (who YOU are)
     this.me = undefined;
 
@@ -115,7 +115,7 @@ var Engine = function (gl) {
     this.lightPMatrix = mat4.create();
     this.lightNearPlane = 0;
     this.lightFarPlane = 0;
-
+    
     // array of lights positions that will be used for cascade shadow mapping technique
     this.cascadeLights = [];
     this.nbCascadeSplit = 0;
@@ -1484,7 +1484,7 @@ Engine.prototype.drawLines = function(to) {
     else {
         gl.bindFramebuffer( gl.FRAMEBUFFER, null );
     }
-    
+
     var points = [
         0.0, 0.0, 0.0,
         0.0, 100.0, 0.0,
@@ -1853,7 +1853,7 @@ Engine.prototype.initShaders = function(loadTotal) {
                             'uHeightScale', 'uMapSize', 'uDirectionalColor', 'uAmbientColor', 'uLightingDirection',
                             'uSamplerSand', 'uSamplerSandNormal', 'uSamplerSand2', 'uSamplerSand2Normal',
                             'uSamplerDirt', 'uSamplerDirtNormal', 'uSamplerRock', 'uSamplerRockNormal',
-			    'uWaterLevel', 'uDepthMapSize', 'uDepthMaps[0]', 'uDepthMaps[1]', 'uDepthMaps[2]', 'uDepthMaps[3]'];
+			    'uWaterLevel', 'uDepthMapSize', 'uDepthMaps[0]', 'uDepthMaps[1]', 'uDepthMaps[2]', 'uDepthMaps[3]', 'uMap1Texture', 'uSnowLevel'];
 
     for(var j = 0; j < 4; j++) {
         def['terrainGPU'][1].push("cParams[" + j + "].mvMatrix");
@@ -1991,12 +1991,14 @@ Engine.prototype.initTextures = function(loadTotal) {
 
     var j = 0;
     var def = [];
-    
+
     //def[j++] = ['waterheight.png', 'waterHeight'];
     //def[j++] = ['xil_dirt.png', 'sand'];
     //def[j++] = ['xil_dirtnormal.png', 'sandNormal'];
-    def[j++] = ['desertworld_sand.png', 'sand2', 'linear'];
-    def[j++] = ['desertworld_sandnormal.png', 'sand2Normal', 'linear'];
+    def[j++] = ['iceworld_1.dds', 'sand', 'linear'];
+    def[j++] = ['iceworld_1normal.dds', 'sandNormal', 'linear'];
+    def[j++] = ['korhalcity_4.dds', 'sand2', 'linear'];
+    def[j++] = ['korhalcity_4normal.dds', 'sand2Normal', 'linear'];
     def[j++] = ['dirt_cracked.png', 'dirt', 'linear'];
     def[j++] = ['dirt_crackednormal.png', 'dirtNormal', 'linear'];
     //def[j++] = ['bel_shir_bricks_small.png', 'rock'];
@@ -2005,6 +2007,7 @@ Engine.prototype.initTextures = function(loadTotal) {
     //def[j++] = ['terrainTest4.png', 'heightMap', 'linear'];
     def[j++] = ['noise.png', 'noise', 'linear'];
     def[j++] = ['grid.png', 'grid', 'nearest'];
+    def[j++] = ['map1texture.png', 'map1texture', 'nearest'];
     
     //def[j++] = ['flowmap.png', 'flowmap'];
 
@@ -2038,29 +2041,43 @@ Engine.prototype.initTextures = function(loadTotal) {
     };
 
     var _initTextures = function(def, i) {
-        
+	
         var name = def[i][1];
         var src = def[i][0];
         var opt = def[i][2];
-        
-        var texture = gl.createTexture();
-        that.textures[name] = texture;
-        that.textures[name].image = new Image();
-        
-        that.textures[name].image.onload = function() {
-            _handleLoadTexture(texture, opt);
-            pending--;
 
-            if(pending === 0) {
+	if (src.split(".")[1] == "dds") {
+
+	    that.textures[name] = loadDDSTexture(that.gl, that.ext['compressedTexture'], "textures/" + src);
+
+	    pending--;
+
+	    if (pending === 0) {
                 d.resolve();
-            }
+	    }
+	    
+	} else {
 
-            that.loadingVal += loadTotal/j;
-        };
-        
-        that.textures[name].image.src = "textures/" + src;
+	    var texture = gl.createTexture();
+            that.textures[name] = texture;
+            that.textures[name].image = new Image();
+            
+            that.textures[name].image.onload = function() {
+		_handleLoadTexture(texture, opt);
+		pending--;
 
-        if(i < j - 1) {
+		if (pending === 0) {
+                    d.resolve();
+		}
+
+		that.loadingVal += loadTotal/j;
+            };
+            
+            that.textures[name].image.src = "textures/" + src;
+
+	}
+	
+        if (i < j - 1) {
             setTimeout(function(){_initTextures(def, ++i);}, 0);
         }
     };

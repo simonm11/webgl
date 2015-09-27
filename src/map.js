@@ -82,15 +82,15 @@ Map.prototype.renderLodGPU = function(prog, mode) {
     
     gl.useProgram(prog);
     gl.enable(gl.DEPTH_TEST);
-    /*
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, textures['sand']);
-      gl.uniform1i(prog['uSamplerSand'], 0);
-      
-      gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_2D, textures['sandNormal']);
-      gl.uniform1i(prog['uSamplerSandNormal'], 1);
-    */
+    
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, textures['sand']);
+    gl.uniform1i(prog['uSamplerSand'], 0);
+    
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, textures['sandNormal']);
+    gl.uniform1i(prog['uSamplerSandNormal'], 1);
+    
     gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_2D, textures['sand2']);
     gl.uniform1i(prog['uSamplerSand2'], 2);
@@ -106,6 +106,11 @@ Map.prototype.renderLodGPU = function(prog, mode) {
     gl.activeTexture(gl.TEXTURE5);
     gl.bindTexture(gl.TEXTURE_2D, textures['dirtNormal']);
     gl.uniform1i(prog['uSamplerDirtNormal'], 5);
+
+    gl.activeTexture(gl.TEXTURE6);
+    gl.bindTexture(gl.TEXTURE_2D, textures['map1texture']);
+    gl.uniform1i(prog['uMap1Texture'], 6);
+    
     /*
       gl.activeTexture(gl.TEXTURE6);
       gl.bindTexture(gl.TEXTURE_2D, textures['rock']);
@@ -163,6 +168,8 @@ Map.prototype.renderLodGPU = function(prog, mode) {
     gl.uniform1f(prog.uMapSize, this.sizeInUnits);
     gl.uniform1f(prog.uHeightScale, this.heightScale);
     gl.uniform1f(prog.uWaterLevel, this.waterLevel);
+    //console.log($( "#snow-level" ).text());
+    gl.uniform1f(prog.uSnowLevel, parseFloat($( "#label-snow-level" ).text()));
 
     this.nbVertexesRendered = 0;
     

@@ -20,6 +20,8 @@ uniform sampler2D uSamplerRockNormal;
 uniform sampler2D uHeightMap;
 uniform sampler2D uNoise;
 
+uniform sampler2D uMap1Texture;
+
 uniform sampler2D uDepthMaps[4];
 
 // map constantes
@@ -29,6 +31,7 @@ uniform float uHeightScale;
 uniform float uMode;
 uniform float uUVScale;
 uniform float uWaterLevel;
+uniform float uSnowLevel;
 
 // Lighting uniforms
 
@@ -55,13 +58,13 @@ vec4 getTextureColor(vec4 diffuseColor, vec4 normal) {
                          cos(normal.g * M_PI) );
 
     // diffuse lighting calculation
-    float diffWeighting = max( dot(vLightDir, vNormal ), 0.0 );
+    float diffWeighting = max(dot(vLightDir, vNormal), 0.0);
     
     // specular lighting calculation
     vec3 reflectionDirection = reflect(-vLightDir, vNormal);
-
-    float specWeighting = max( dot(vec3(0.0, 1.0, 0.0), reflectionDirection), 0.0 );
-    vec3 specularColor = vec3(diffuseColor.a * specWeighting * diffWeighting * 2.0);
+    
+    // float specWeighting = max( dot(vec3(0.0, 1.0, 0.0), reflectionDirection), 0.0 );
+    // vec3 specularColor = vec3(diffuseColor.a * specWeighting * diffWeighting * 2.0);
     
     vec4 color = vec4((diffuseColor.rgb * ((uDirectionalColor * diffWeighting) + uAmbientColor) /*+ specularColor*/), diffuseColor.a);
 
@@ -83,6 +86,64 @@ float VSM(sampler2D depths, vec2 uv, float compare){
     return clamp(max(p, p_max), 0.0, 1.0);
 }
 
+/*
+  Seamless texture merging
+  TODO: this could probably be done a lot more efficiently
+ */
+vec4 textureMerge(vec4 t1, vec4 t2, float noise, float l, float r, float p) {
+
+  float v = r - l;
+  
+  // less than this, 100% texture 1 (t1)
+  //float min = l - ((((t1.a * 10.0) - 0.5) * 2.0) * v);
+
+  // [-1, 1]
+  float h = ((((t1.a * 10.0) * 2.0) - 1.0) * v);
+  
+  float min = ((l - 0.5 - h) + 1.0) / 2.0;
+
+  // more than this, 100% texture 2 (t2)
+  float max = r;
+
+  float value = p + (noise * 0.5 * v);
+
+  float x = smoothstep(min, max, value);
+    
+  // pretty much equivalent to x = float(x > 0.5), but less drastic;
+  // the goal is for x to almost always be 1 or 0. I don't want texture to mix too much.
+  // but enough to remove the 'noise' effect of isolated pixel
+  x = smoothstep(0.45, 0.55, x);
+  
+  return (t1 * x) + ((t2) * (1.0 - x));
+}
+
+/*
+  Seamless texture merging
+  TODO: this could probably be done a lot more efficiently
+ */
+vec4 textureMerge2(vec4 t1, vec4 t2, float noise, float l, float r, float p) {
+
+  float v = r - l;
+  
+  // less than this, 100% texture 1 (t1)
+  float min = l + (t2.a * v * 5.0);
+
+  // more than this, 100% texture 2 (t2)
+  float max = r;
+
+  // -0.5 * 2 to put the noise in the [-1, 1] range.
+  // TODO: 0.05 should probably be a variable depending on 'v'
+  float value = p + (noise * 0.15);
+  
+  float x = smoothstep(min, max, value);
+    
+  // pretty much equivalent to x = float(x > 0.5), but less drastic;
+  // the goal is for x to almost always be 1 or 0. I don't want texture to mix too much.
+  x = smoothstep(0.4, 0.6, x);
+
+  return (t1 * x) + ((t2) * (1.0 - x));
+}
+
 void main() {
     
     if ( vWorldPosition.x < 0.0 || vWorldPosition.z < 0.0 || vWorldPosition.x > uMapSize || vWorldPosition.z > uMapSize) {
@@ -90,30 +151,49 @@ void main() {
     }
 
     vec2 uv = (vWorldPosition.xz / uMapSize) * uUVScale;
-    
+
+    float noise = (texture2D(uNoise, uv / 16.0).r * 2.0) - 1.0;
+	
     // Sample textures
+
+    vec4 textSelection =        texture2D(uMap1Texture, (vWorldPosition.xz / uMapSize));
+
+    vec4 textureSand = 	        texture2D(uSamplerSand, uv);
+    vec4 textureSandNormal =	texture2D(uSamplerSandNormal, uv);
     
     vec4 textureSand2 = 	texture2D(uSamplerSand2, uv);
     vec4 textureSand2Normal =	texture2D(uSamplerSand2Normal, uv);
 		
     vec4 textureDirt3 = 	texture2D(uSamplerDirt, uv);
     vec4 textureDirtNormal3 = 	texture2D(uSamplerDirtNormal, uv);
+
+    vec4 snowColor = getTextureColor(textureSand, textureSandNormal);
+    vec4 sandColor;
+    vec4 sandColorTmp = getTextureColor(textureSand2, textureSand2Normal);
+
+
+    //float x = (vWorldPosition.x /uMapSize);
+
+    //float x = textSelection.r / 1.0;
+
+    float x = uSnowLevel / 100.0;
     
-    vec4 sandColor = getTextureColor(textureSand2, textureSand2Normal);
-    vec4 rockColor3 = getTextureColor(textureDirt3, textureDirtNormal3);
+    //sandColor = textureMerge(sandColorTmp, snowColor, noise, 0.4, 0.6, x);
+    sandColor = textureMerge(sandColorTmp, snowColor, noise, 0.0, 1.0, x);
     
-    float noise = (texture2D(uNoise, uv / 16.0).r * 2.0) - 1.0;
-    
-    vec4 yColor = rockColor3;
-        
+    vec4 rockColor = getTextureColor(textureDirt3, textureDirtNormal3);
+
     float sandContrib;
     
     float yC = abs(dot(vVertexNormal, vec3(0.0, 1.0, 0.0)));
-    sandContrib = smoothstep(0.7 + (yColor.a * 2.0) + (noise * 0.25), 1.0, yC);
+
+    sandContrib = smoothstep(0.7 + (rockColor.a * 2.0)/* + (noise * 0.25)*/, 1.0, yC);
     sandContrib = smoothstep(0.4, 0.6, sandContrib);
         
-    vec4 colorFinal = sandColor * sandContrib + yColor * (1.0 - sandContrib);
+    //vec4 colorFinal = (sandColor * sandContrib) + (rockColor * (1.0 - sandContrib));
 
+    vec4 colorFinal = textureMerge2(sandColor, rockColor, noise, 0.7, 1.0, yC);
+    
     float shadow = 1.0;
     
     vec3 depths[4];
@@ -169,10 +249,13 @@ void main() {
     float shadow4 = VSM(uDepthMaps[3], depths[3].xy, depths[3].z);
     
     shadow = shadow1*c1 + shadow2*c2 + shadow3*c3 + shadow4*c4;
-
-    //colorFinal = vec4(c1, c2 + c4, c3 + c4, 1.0);
-    
+    /*
+    if (sandColorTmp.a * 10.0 > 0.5) {
+      colorFinal = vec4(1.0, 0.0, 0.0, 1.0);
+    }
+    */
     gl_FragColor = vec4(vec3(colorFinal)*clamp(shadow, 0.7, 1.0), (gl_FragCoord.z / gl_FragCoord.w));
+    
     //gl_FragColor = vec4(vec3(1.0, 0.0, 0.0)/**clamp(shadow, 0.7, 1.0)*/, (gl_FragCoord.z / gl_FragCoord.w));
     
 }

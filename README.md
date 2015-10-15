@@ -1,5 +1,7 @@
 # Rendering engine using WebGL
 
+![test](http://i.imgur.com/Da6pZie.jpg)
+
 I started this project as a way to learn OpenGL. I decided to do it in WebGL because I was curious and interested in the technology.
 
 Since I simply cared about learning about OpenGL/WebGL, I didn't use any existing 3D library (no three.js) and tried to implement everything from -- more or less -- scratch.

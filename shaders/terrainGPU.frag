@@ -5,14 +5,11 @@ precision highp float;
 
 // Textures
 
-uniform sampler2D uSamplerSand;
-uniform sampler2D uSamplerSandNormal;
+uniform sampler2D uSamplerGround;
+uniform sampler2D uSamplerGroundNormal;
 
-uniform sampler2D uSamplerSand2;
-uniform sampler2D uSamplerSand2Normal;
-
-uniform sampler2D uSamplerDirt;
-uniform sampler2D uSamplerDirtNormal;
+uniform sampler2D uSamplerLayer1;
+uniform sampler2D uSamplerLayer1Normal;
 
 uniform sampler2D uSamplerRock;
 uniform sampler2D uSamplerRockNormal;
@@ -158,18 +155,18 @@ void main() {
 
     vec4 textSelection =        texture2D(uMap1Texture, (vWorldPosition.xz / uMapSize));
 
-    vec4 textureSand = 	        texture2D(uSamplerSand, uv);
-    vec4 textureSandNormal =	texture2D(uSamplerSandNormal, uv);
+    vec4 textureSand = 	        texture2D(uSamplerGround, uv);
+    vec4 textureSandNormal =	texture2D(uSamplerGroundNormal, uv);
     
-    vec4 textureSand2 = 	texture2D(uSamplerSand2, uv);
-    vec4 textureSand2Normal =	texture2D(uSamplerSand2Normal, uv);
+    vec4 textureSand2 = 	    texture2D(uSamplerLayer1, uv);
+    vec4 textureSand2Normal =	texture2D(uSamplerLayer1Normal, uv);
 		
-    vec4 textureDirt3 = 	texture2D(uSamplerDirt, uv);
-    vec4 textureDirtNormal3 = 	texture2D(uSamplerDirtNormal, uv);
+    vec4 textureDirt3 = 	    texture2D(uSamplerRock, uv);
+    vec4 textureDirtNormal3 = 	texture2D(uSamplerRockNormal, uv);
 
-    vec4 snowColor = getTextureColor(textureSand, textureSandNormal);
+    vec4 snowColor = getTextureColor(textureSand2, textureSand2Normal);
     vec4 sandColor;
-    vec4 sandColorTmp = getTextureColor(textureSand2, textureSand2Normal);
+    vec4 sandColorTmp = getTextureColor(textureSand, textureSandNormal);
 
 
     //float x = (vWorldPosition.x /uMapSize);

@@ -19,17 +19,15 @@ varying vec3 worldPosition;
 /*
 	Textures Uniforms
 */
-uniform sampler2D uSamplerSand;
-uniform sampler2D uSamplerSandNormal;
+uniform sampler2D uSamplerGround;
+uniform sampler2D uSamplerGroundNormal;
 
-uniform sampler2D uSamplerSand2;
-uniform sampler2D uSamplerSand2Normal;
-
-uniform sampler2D uSamplerDirt;
-uniform sampler2D uSamplerDirtNormal;
+uniform sampler2D uSamplerLayer1;
+uniform sampler2D uSamplerLayer1Normal;
 
 uniform sampler2D uSamplerRock;
 uniform sampler2D uSamplerRockNormal;
+
 
 uniform sampler2D uDepthMap;
 uniform sampler2D uDepthMap2;
@@ -284,27 +282,27 @@ void main(void) {
     //vec4 grid = texture2D(uGrid, worldPosition.xz / uMapSize);
     
     // Terrain textures horrizontal
-    //vec4 textureDirt = 			texture2D(uSamplerDirt, vec2(vTextureCoord.s, vTextureCoord.t));
-    //vec4 textureDirtNormal = 	texture2D(uSamplerDirtNormal, vec2(vTextureCoord.s, vTextureCoord.t));	
+    //vec4 textureDirt = 			texture2D(uSamplerRock, vec2(vTextureCoord.s, vTextureCoord.t));
+    //vec4 textureDirtNormal = 	texture2D(uSamplerRockNormal, vec2(vTextureCoord.s, vTextureCoord.t));	
     
-    //vec4 textureSand = 			texture2D(uSamplerSand, vec2(vTextureCoord.s, vTextureCoord.t));
-    //vec4 textureSandNormal = 	texture2D(uSamplerSandNormal, vec2(vTextureCoord.s, vTextureCoord.t));
+    //vec4 textureSand = 			texture2D(uSamplerGround, vec2(vTextureCoord.s, vTextureCoord.t));
+    //vec4 textureSandNormal = 	texture2D(uSamplerGroundNormal, vec2(vTextureCoord.s, vTextureCoord.t));
 		
-    vec4 textureSand2 = 		texture2D(uSamplerSand2, vec2(vTextureCoord.s, vTextureCoord.t));
-    vec4 textureSand2Normal =	texture2D(uSamplerSand2Normal, vec2(vTextureCoord.s, vTextureCoord.t));
+    vec4 textureSand2 = 		texture2D(uSamplerLayer1, vec2(vTextureCoord.s, vTextureCoord.t));
+    vec4 textureSand2Normal =	texture2D(uSamplerLayer1Normal, vec2(vTextureCoord.s, vTextureCoord.t));
 		
     //vec4 textureRock = 			texture2D(uSamplerRock, vec2(vTextureCoord.s, vTextureCoord.t));
     //vec4 textureRockNormal = 	texture2D(uSamplerRockNormal, vec2(vTextureCoord.s, vTextureCoord.t));
     
     // Terrain textures vertical
-    /*vec4 textureDirt = 			texture2D(uSamplerDirt, vec2((pos.y / uHeightScale)*2.0, vTextureCoord.t));
-      vec4 textureDirtNormal = 	texture2D(uSamplerDirtNormal, vec2((pos.y / uHeightScale)*2.0, vTextureCoord.t));
+    /*vec4 textureDirt = 			texture2D(uSamplerRock, vec2((pos.y / uHeightScale)*2.0, vTextureCoord.t));
+      vec4 textureDirtNormal = 	texture2D(uSamplerRockNormal, vec2((pos.y / uHeightScale)*2.0, vTextureCoord.t));
         
-      vec4 textureDirt2 = 		texture2D(uSamplerDirt, vec2(vTextureCoord.s, (pos.y / uHeightScale)*2.0));
-      vec4 textureDirtNormal2 = 	texture2D(uSamplerDirtNormal, vec2(vTextureCoord.s, (pos.y / uHeightScale)*2.0));
+      vec4 textureDirt2 = 		texture2D(uSamplerRock, vec2(vTextureCoord.s, (pos.y / uHeightScale)*2.0));
+      vec4 textureDirtNormal2 = 	texture2D(uSamplerRockNormal, vec2(vTextureCoord.s, (pos.y / uHeightScale)*2.0));
     */
-    vec4 textureDirt3 = 	    texture2D(uSamplerDirt, vec2(vTextureCoord.s, vTextureCoord.t));
-    vec4 textureDirtNormal3 = 	texture2D(uSamplerDirtNormal, vec2(vTextureCoord.s, vTextureCoord.t));
+    vec4 textureDirt3 = 	    texture2D(uSamplerRock, vec2(vTextureCoord.s, vTextureCoord.t));
+    vec4 textureDirtNormal3 = 	texture2D(uSamplerRockNormal, vec2(vTextureCoord.s, vTextureCoord.t));
         
     float noise = (texture2D(uNoise, vec2(vTextureCoord.s, vTextureCoord.t)/16.0).r * 2.0) - 1.0;
         

@@ -63,7 +63,7 @@ vec3 aerialPerspective(vec3 albedo, float dist, vec3 rayOrigin, vec3 rayDirectio
 
 vec4 getNoise(vec2 uv){
 
-  float t = 2.0;
+  float t = 2.0 * 100.0;
     
   vec2 uv0 = (uv/(103.0)*t)+vec2(time/(17.0*t), time/(29.0*t));
   vec2 uv1 = uv/(107.0*t)-vec2(time/-(19.0*t), time/(31.0*t))+vec2((0.23*t));
@@ -128,49 +128,6 @@ float Near = 10.0;
 float Far = 6000.0;
 float LinearDepthConstant = 1.0 / (Far - Near);
 
-vec3 calcReflectionColor(const vec3 surfaceNormal, const vec3 sunVec, const vec3 viewVec) {
-
-  vec3 reflectedVec = normalize(reflect(viewVec, surfaceNormal)); 
-  reflectedVec.y = abs(reflectedVec.y);
-    
-  float cos_theta = dot(reflectedVec, sunVec);
-  float ray_dist = baseOpticalDepth(reflectedVec);
-
-  vec3 extinction = calcExtinction(ray_dist);
-		
-  vec3 light_ray_pos = reflectedVec * (ray_dist * sky_params4.z);
-		
-  float light_ray_dist = opticalDepth(light_ray_pos, sunVec);
-
-  //float light_ray_dist_full = opticalDepth(view_vec * ray_dist, sun_vec);
-    
-  //light_ray_dist = max(light_ray_dist, light_ray_dist_full);
-
-  // cast a ray towards the sun and calculate the incoming extincted light
-  vec3 incoming_light = calcExtinction(light_ray_dist);
-		
-  // calculate the in-scattering
-  vec3 scattering = calcScattering(cos_theta);
-  scattering *= 1.0 - extinction;
-		 
-  // combine
-  vec3 in_scatter = incoming_light * scattering;
-		 
-  // sun disk
-  float sun_strength = clamp(cos_theta * sky_params1.x + sky_params1.y, 0.0, 1.0);
-  sun_strength *= sun_strength;
-
-  vec3 sun_disk = extinction * sun_strength;
-    
-  vec3 reflectionColor = sky_params5.xyz * (sky_params5.w * sun_disk + in_scatter);
-		
-  // gamma adjust
-  reflectionColor.x = pow(reflectionColor.x, 1.0/2.0);
-  reflectionColor.y = pow(reflectionColor.y, 1.0/2.0);
-  reflectionColor.z = pow(reflectionColor.z, 1.0/2.0);
-
-  return reflectionColor;
-}
 
 vec4 calcRefractionColor(vec3 surfaceNormal, vec3 viewVec, float diff, float d_water) {
   //vec4 colorTerrain = texture2D(uSceneColor, gl_FragCoord.xy/canvasSize);
@@ -218,7 +175,8 @@ vec3 getWaterNormal() {
   // random noise
   //float noise = texture2D(uNoise, vUv*16.0).r;
   float noise = 0.0;
-    
+  float size_mod = 100.0;
+  
   // Time
   float phase0 = (noise * 0.05) + (time1 * 0.01);
   float phase1 = (noise * 0.05) + (time2 * 0.01);
@@ -229,14 +187,14 @@ vec3 getWaterNormal() {
     
   // Matrix to shift the water normal texture toward the flow direction
   mat2 rotmat = mat2(flowdir.x, -flowdir.y, flowdir.y ,flowdir.x);
-    
+  
   // Big waves
-  vec3 normalT0 = texture2D(uSampler, (rotmat * vUv)*100.0 + vec2(phase0, 0.0)).rgb;
-  vec3 normalT1 = texture2D(uSampler, (rotmat * vUv)*100.0 + vec2(phase1, 0.0)).rgb;
+  vec3 normalT0 = texture2D(uSampler, (rotmat * vUv) * 100.0 + vec2(phase0, 0.0)).rgb;
+  vec3 normalT1 = texture2D(uSampler, (rotmat * vUv) * 100.0 + vec2(phase1, 0.0)).rgb;
     
   // Small waves
-  vec3 normalT3 = texture2D(uSampler, (rotmat * vUv)*440.0 + vec2(phase0, 0.0) * 2.0).rgb;
-  vec3 normalT4 = texture2D(uSampler, (rotmat * vUv)*440.0 + vec2(phase1, 0.0) * 2.0).rgb;
+  vec3 normalT3 = texture2D(uSampler, (rotmat * vUv) * 440.0 + vec2(phase0, 0.0) * 2.0).rgb;
+  vec3 normalT4 = texture2D(uSampler, (rotmat * vUv) * 440.0 + vec2(phase1, 0.0) * 2.0).rgb;
     
   normalT1 = normalT1 + normalT4 - 1.0;
   normalT0 = normalT0 + normalT3 - 1.0;
@@ -283,7 +241,6 @@ void main(void){
     surfaceNormal = normalize(surfaceNormal.xzy * vec3(1.0, clamp(d_water * 0.001, 1.0, 10.0), 1.0));
 
     // Reflection Color
-    //reflectionColor = calcReflectionColor(surfaceNormal, sunVec, viewVec);
     vec3 reflectedVec = normalize( reflect( viewVec, surfaceNormal ) ); 
     reflectedVec.y = -abs(reflectedVec.y);
     reflectedVec.x *= -1.0;

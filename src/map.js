@@ -21,10 +21,10 @@ var Map = function(_engine) {
     this.lights = {};
     this.size = {};
     
-    this.heightScaleMeters = 10.0;
+    this.heightScaleMeters = 10.0 * 100.0;
     this.heightScale = this.heightScaleMeters / this.engine.unitToMeter;
     
-    this.sizeInMeters = 100.0;
+    this.sizeInMeters = 100.0 * 50.0;
     this.sizeInUnits = this.sizeInMeters / this.engine.unitToMeter;
 
     this.waterLevel = 0.2; // 50% of the map is under water
@@ -84,28 +84,28 @@ Map.prototype.renderLodGPU = function(prog, mode) {
     gl.enable(gl.DEPTH_TEST);
     
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, textures['sand']);
-    gl.uniform1i(prog['uSamplerSand'], 0);
+    gl.bindTexture(gl.TEXTURE_2D, textures['ground']);
+    gl.uniform1i(prog['uSamplerGround'], 0);
     
     gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_2D, textures['sandNormal']);
-    gl.uniform1i(prog['uSamplerSandNormal'], 1);
+    gl.bindTexture(gl.TEXTURE_2D, textures['groundNormal']);
+    gl.uniform1i(prog['uSamplerGroundNormal'], 1);
     
     gl.activeTexture(gl.TEXTURE2);
-    gl.bindTexture(gl.TEXTURE_2D, textures['sand2']);
-    gl.uniform1i(prog['uSamplerSand2'], 2);
+    gl.bindTexture(gl.TEXTURE_2D, textures['layer1']);
+    gl.uniform1i(prog['uSamplerLayer1'], 2);
     
     gl.activeTexture(gl.TEXTURE3);
-    gl.bindTexture(gl.TEXTURE_2D, textures['sand2Normal']);
-    gl.uniform1i(prog['uSamplerSand2Normal'], 3);
+    gl.bindTexture(gl.TEXTURE_2D, textures['layer1Normal']);
+    gl.uniform1i(prog['uSamplerLayer1Normal'], 3);
     
     gl.activeTexture(gl.TEXTURE4);
-    gl.bindTexture(gl.TEXTURE_2D, textures['dirt']);
-    gl.uniform1i(prog['uSamplerDirt'], 4);
+    gl.bindTexture(gl.TEXTURE_2D, textures['rock']);
+    gl.uniform1i(prog['uSamplerRock'], 4);
     
     gl.activeTexture(gl.TEXTURE5);
-    gl.bindTexture(gl.TEXTURE_2D, textures['dirtNormal']);
-    gl.uniform1i(prog['uSamplerDirtNormal'], 5);
+    gl.bindTexture(gl.TEXTURE_2D, textures['rockNormal']);
+    gl.uniform1i(prog['uSamplerRockNormal'], 5);
 
     gl.activeTexture(gl.TEXTURE6);
     gl.bindTexture(gl.TEXTURE_2D, textures['map1texture']);
@@ -1505,28 +1505,28 @@ Map.prototype.renderGPU = function(prog) {
     var textures = this.engine.textures;
     
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, textures['sand']);
-    gl.uniform1i(prog['uSamplerSand'], 0);
+    gl.bindTexture(gl.TEXTURE_2D, textures['ground']);
+    gl.uniform1i(prog['uSamplerGround'], 0);
     
     gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_2D, textures['sandNormal']);
-    gl.uniform1i(prog['uSamplerSandNormal'], 1);
+    gl.bindTexture(gl.TEXTURE_2D, textures['groundNormal']);
+    gl.uniform1i(prog['uSamplerGroundNormal'], 1);
     
     gl.activeTexture(gl.TEXTURE2);
-    gl.bindTexture(gl.TEXTURE_2D, textures['sand2']);
-    gl.uniform1i(prog['uSamplerSand2'], 2);
+    gl.bindTexture(gl.TEXTURE_2D, textures['layer1']);
+    gl.uniform1i(prog['uSamplerLayer1'], 2);
     
     gl.activeTexture(gl.TEXTURE3);
-    gl.bindTexture(gl.TEXTURE_2D, textures['sand2Normal']);
-    gl.uniform1i(prog['uSamplerSand2Normal'], 3);
+    gl.bindTexture(gl.TEXTURE_2D, textures['layer1Normal']);
+    gl.uniform1i(prog['uSamplerLayer1Normal'], 3);
     
     gl.activeTexture(gl.TEXTURE4);
-    gl.bindTexture(gl.TEXTURE_2D, textures['dirt']);
-    gl.uniform1i(prog['uSamplerDirt'], 4);
+    gl.bindTexture(gl.TEXTURE_2D, textures['rock']);
+    gl.uniform1i(prog['uSamplerRock'], 4);
     
     gl.activeTexture(gl.TEXTURE5);
-    gl.bindTexture(gl.TEXTURE_2D, textures['dirtNormal']);
-    gl.uniform1i(prog['uSamplerDirtNormal'], 5);
+    gl.bindTexture(gl.TEXTURE_2D, textures['rockNormal']);
+    gl.uniform1i(prog['uSamplerRockNormal'], 5);
     
     gl.activeTexture(gl.TEXTURE6);
     gl.bindTexture(gl.TEXTURE_2D, textures['rock']);
@@ -1605,28 +1605,28 @@ Map.prototype.renderCPU = function(prog) {
     var textures = this.engine.textures;
     
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, textures['sand']);
-    gl.uniform1i(prog['uSamplerSand'], 0);
+    gl.bindTexture(gl.TEXTURE_2D, textures['ground']);
+    gl.uniform1i(prog['uSamplerGround'], 0);
     
     gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_2D, textures['sandNormal']);
-    gl.uniform1i(prog['uSamplerSandNormal'], 1);
+    gl.bindTexture(gl.TEXTURE_2D, textures['groundNormal']);
+    gl.uniform1i(prog['uSamplerGroundNormal'], 1);
     
     gl.activeTexture(gl.TEXTURE2);
-    gl.bindTexture(gl.TEXTURE_2D, textures['sand2']);
-    gl.uniform1i(prog['uSamplerSand2'], 2);
+    gl.bindTexture(gl.TEXTURE_2D, textures['layer1']);
+    gl.uniform1i(prog['uSamplerLayer1'], 2);
     
     gl.activeTexture(gl.TEXTURE3);
-    gl.bindTexture(gl.TEXTURE_2D, textures['sand2Normal']);
-    gl.uniform1i(prog['uSamplerSand2Normal'], 3);
+    gl.bindTexture(gl.TEXTURE_2D, textures['layer1Normal']);
+    gl.uniform1i(prog['uSamplerLayer1Normal'], 3);
     
     gl.activeTexture(gl.TEXTURE4);
-    gl.bindTexture(gl.TEXTURE_2D, textures['dirt']);
-    gl.uniform1i(prog['uSamplerDirt'], 4);
+    gl.bindTexture(gl.TEXTURE_2D, textures['rock']);
+    gl.uniform1i(prog['uSamplerRock'], 4);
     
     gl.activeTexture(gl.TEXTURE5);
-    gl.bindTexture(gl.TEXTURE_2D, textures['dirtNormal']);
-    gl.uniform1i(prog['uSamplerDirtNormal'], 5);
+    gl.bindTexture(gl.TEXTURE_2D, textures['rockNormal']);
+    gl.uniform1i(prog['uSamplerRockNormal'], 5);
     
     gl.activeTexture(gl.TEXTURE6);
     gl.bindTexture(gl.TEXTURE_2D, textures['rock']);

@@ -240,8 +240,9 @@ Engine.prototype.start = function() {
     // Create and load map
     this.map = new Map(this);
 
-    this.map.downloadHeightMap("heightmaps/terrain5.raw", 16).then(function(){
-    //this.map.downloadHeightMap("heightmaps/mt-taranaki.raw", 16).then(function() {
+    //this.map.downloadHeightMap("heightmaps/terrain5.raw", 16).then(function(){
+    this.map.downloadHeightMap("heightmaps/mt-taranaki.raw", 16).then(function() {
+    //this.map.downloadHeightMap("heightmaps/terrain4.raw", 16).then(function() {
     //this.map.downloadHeightMap("heightmaps/terrain0-16bbp-257x257.raw", 16).then(function(){
 
         var now, tmp;
@@ -1851,8 +1852,8 @@ Engine.prototype.initShaders = function(loadTotal) {
     def['terrainGPU'][0] = ['aVertexPosition'];
     def['terrainGPU'][1] = ['uTranslation', 'uPMatrix', 'uMVMatrix', 'uHeightMap', 'uMode', 'uUVScale', 'uNoise',
                             'uHeightScale', 'uMapSize', 'uDirectionalColor', 'uAmbientColor', 'uLightingDirection',
-                            'uSamplerSand', 'uSamplerSandNormal', 'uSamplerSand2', 'uSamplerSand2Normal',
-                            'uSamplerDirt', 'uSamplerDirtNormal', 'uSamplerRock', 'uSamplerRockNormal',
+                            'uSamplerGround', 'uSamplerGroundNormal', 'uSamplerLayer1', 'uSamplerLayer1Normal',
+                            'uSamplerRock', 'uSamplerRockNormal', 'uSamplerRock', 'uSamplerRockNormal',
 			    'uWaterLevel', 'uDepthMapSize', 'uDepthMaps[0]', 'uDepthMaps[1]', 'uDepthMaps[2]', 'uDepthMaps[3]', 'uMap1Texture', 'uSnowLevel'];
 
     for(var j = 0; j < 4; j++) {
@@ -1865,15 +1866,15 @@ Engine.prototype.initShaders = function(loadTotal) {
     def['terrainGPUNOS'] = [];
 
     def['terrainGPUNOS'][0] = ['aVertexPosition'];
-    def['terrainGPUNOS'][1] = ['uTranslation', 'uPMatrix', 'uMVMatrix', 'uHeightMap', 'uMode', 'uUVScale', 'uNoise', 'uHeightScale', 'uMapSize', 'uDirectionalColor', 'uAmbientColor', 'uLightingDirection', 'uSamplerSand', 'uSamplerSandNormal', 'uSamplerSand2', 'uSamplerSand2Normal', 'uSamplerDirt', 'uSamplerDirtNormal', 'uSamplerRock', 'uSamplerRockNormal', 'uWaterLevel'];
+    def['terrainGPUNOS'][1] = ['uTranslation', 'uPMatrix', 'uMVMatrix', 'uHeightMap', 'uMode', 'uUVScale', 'uNoise', 'uHeightScale', 'uMapSize', 'uDirectionalColor', 'uAmbientColor', 'uLightingDirection', 'uSamplerGround', 'uSamplerGroundNormal', 'uSamplerLayer1', 'uSamplerLayer1Normal', 'uSamplerRock', 'uSamplerRockNormal', 'uSamplerRock', 'uSamplerRockNormal', 'uWaterLevel'];
 
     def['terrain'] = [];
     
     def['terrain'][0] = ['aVertexPosition', 'aTexturePosition', 'aVertexTangent', 'aVertexNormal'];
     def['terrain'][1] = ['uPMatrix', 'uMVMatrix', 'uViewMatrix', 'uModelMatrix', 'uNormalMatrix', 'uMapSize', 
                          'uEyesPosition', 'uLightMVMatrix', 'uLightPMatrix', 'uHeightMap', 'uTerrainNormals',
-                         'uSamplerSand', 'uSamplerSandNormal', 'uSamplerSand2', 'uSamplerSand2Normal', 'uGrid',
-                         'uSamplerDirt', 'uSamplerDirtNormal', 'uSamplerRock', 'uSamplerRockNormal',
+                         'uSamplerGround', 'uSamplerGroundNormal', 'uSamplerLayer1', 'uSamplerLayer1Normal', 'uGrid',
+                         'uSamplerRock', 'uSamplerRockNormal', 'uSamplerRock', 'uSamplerRockNormal',
                          'uDepthMaps[3]', 'uAmbientColor', 'uLightingDirection', 'uDirectionalColor',
                          'uMouseIndexPosition', 'uMode', 'uFarPlane', 'uNearPlane', 'uHeightScale', 'uNoise', 'uDepthMapSize', 'uDepthMaps[0]', 'uDepthMaps[1]', 'uDepthMaps[2]'];
     
@@ -1991,12 +1992,38 @@ Engine.prototype.initTextures = function(loadTotal) {
 
     var j = 0;
     var def = [];
-
+    
+    // For now, I'm using 4 different textures.
+    
+    // 'ground' = bottom layer (sand, ground, ..).  R.
+    // 'layer1' = above layer (snow, surface sand). G.
+    // 'rock'   = rocks for elevation, hills.       B.
+    // ??       = not decided yet.                  A.
+    
+    def[j++] = ['sand1.png', 'ground', 'linear'];
+    def[j++] = ['sand1normal.png', 'groundNormal', 'linear']; 
+    
+    def[j++] = ['snow1.dds', 'layer1', 'linear'];
+    def[j++] = ['snow1normal.dds', 'layer1Normal', 'linear']
+    
+    def[j++] = ['rockice.dds', 'rock', 'linear'];
+    def[j++] = ['rockicenormal.dds', 'rockNormal', 'linear'];
+    
+    // Then we need waterNormal, noise, and a texture map
+    
+    def[j++] = ['noise.png', 'noise', 'linear'];
+    def[j++] = ['grid.png', 'grid', 'nearest'];
+    def[j++] = ['map1texture.png', 'map1texture', 'nearest'];
+    def[j++] = ['waterNormal.png', 'waterNormal', 'linear'];
+    
+    /*
     //def[j++] = ['waterheight.png', 'waterHeight'];
     //def[j++] = ['xil_dirt.png', 'sand'];
     //def[j++] = ['xil_dirtnormal.png', 'sandNormal'];
-    def[j++] = ['iceworld_1.dds', 'sand', 'linear'];
-    def[j++] = ['iceworld_1normal.dds', 'sandNormal', 'linear'];
+    //def[j++] = ['iceworld_1.dds', 'sand', 'linear'];
+    //def[j++] = ['iceworld_1normal.dds', 'sandNormal', 'linear'];
+    def[j++] = ['sand1.png', 'sand', 'linear'];
+    def[j++] = ['sand1normal.png', 'sandNormal', 'linear'];
     def[j++] = ['korhalcity_4.dds', 'sand2', 'linear'];
     def[j++] = ['korhalcity_4normal.dds', 'sand2Normal', 'linear'];
     def[j++] = ['dirt_cracked.png', 'dirt', 'linear'];
@@ -2010,7 +2037,7 @@ Engine.prototype.initTextures = function(loadTotal) {
     def[j++] = ['map1texture.png', 'map1texture', 'nearest'];
     
     //def[j++] = ['flowmap.png', 'flowmap'];
-
+    */
     var i = 0;
     var d = jQuery.Deferred();
     var that = this;

@@ -24,12 +24,12 @@ Bump Mapping + texture blending :
 
 # Shadows
 
-![shadow1](http://imgur.com/EVHfaxW)
+![shadow1](http://i.imgur.com/EVHfaxW.png)
 
 # Sky
 # Water
 
-![water](http://imgur.com/4CVdb7v)
+![water](http://i.imgur.com/4CVdb7v.png)
 
 # Objects
 

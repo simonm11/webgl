@@ -240,8 +240,8 @@ Engine.prototype.start = function() {
     // Create and load map
     this.map = new Map(this);
 
-    //this.map.downloadHeightMap("heightmaps/terrain5.raw", 16).then(function(){
-    this.map.downloadHeightMap("heightmaps/mt-taranaki.raw", 16).then(function() {
+    this.map.downloadHeightMap("heightmaps/terrain5.raw", 16).then(function(){
+    //this.map.downloadHeightMap("heightmaps/mt-taranaki.raw", 16).then(function() {
     //this.map.downloadHeightMap("heightmaps/terrain4.raw", 16).then(function() {
     //this.map.downloadHeightMap("heightmaps/terrain0-16bbp-257x257.raw", 16).then(function(){
 
@@ -2006,8 +2006,8 @@ Engine.prototype.initTextures = function(loadTotal) {
     def[j++] = ['snow1.dds', 'layer1', 'linear'];
     def[j++] = ['snow1normal.dds', 'layer1Normal', 'linear']
     
-    def[j++] = ['rockice.dds', 'rock', 'linear'];
-    def[j++] = ['rockicenormal.dds', 'rockNormal', 'linear'];
+    def[j++] = ['rock.png', 'rock', 'linear'];
+    def[j++] = ['rocknormal.png', 'rockNormal', 'linear'];
     
     // Then we need waterNormal, noise, and a texture map
     

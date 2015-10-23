@@ -17,8 +17,19 @@ Here is what I managed to implement (I'll go in details about each a bit down, i
 
 # Terrain
 # Textures
+
+Bump Mapping + texture blending :
+
+![text1](http://i.imgur.com/l5cOxBA.png)![text2](http://i.imgur.com/RmAHqiv.png)
+
 # Shadows
+
+![shadow1](http://imgur.com/EVHfaxW)
+
 # Sky
 # Water
+
+![water](http://imgur.com/4CVdb7v)
+
 # Objects
 

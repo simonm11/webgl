@@ -21,10 +21,10 @@ var Map = function(_engine) {
     this.lights = {};
     this.size = {};
     
-    this.heightScaleMeters = 10.0 * 100.0;
+    this.heightScaleMeters = 10.0;// * 100.0;
     this.heightScale = this.heightScaleMeters / this.engine.unitToMeter;
     
-    this.sizeInMeters = 100.0 * 50.0;
+    this.sizeInMeters = 100.0;// * 50.0;
     this.sizeInUnits = this.sizeInMeters / this.engine.unitToMeter;
 
     this.waterLevel = 0.2; // 50% of the map is under water

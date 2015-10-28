@@ -169,7 +169,7 @@ Map.prototype.renderLodGPU = function(prog, mode) {
     gl.uniform1f(prog.uHeightScale, this.heightScale);
     gl.uniform1f(prog.uWaterLevel, this.waterLevel);
     //console.log($( "#snow-level" ).text());
-    gl.uniform1f(prog.uSnowLevel, parseFloat($( "#label-snow-level" ).text()));
+    gl.uniform1f(prog.uSnowLevel, 100.0 - parseFloat($( "#label-snow-level" ).text()));
 
     this.nbVertexesRendered = 0;
     

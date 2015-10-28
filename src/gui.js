@@ -207,7 +207,7 @@ Gui.prototype.refreshSkyParams = function() {
 
     var pres = 1000;
 
-    $("#label-snow-level").text($("#snow-level").slider( "value" ));
+    $("#label-snow-level").text($("#snow-level").slider("value"));
     
     $("#label-pitch").text($("#pitch").slider( "value" ));
     $("#label-yawn").text($("#yawn").slider( "value" ));

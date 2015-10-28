@@ -25,7 +25,6 @@ var states = Object.freeze({
 
 /**
  *   Engine constructor
- *   @param {webglContext} Webgl rendering context
  */
 var Engine = function (gl) {
     
